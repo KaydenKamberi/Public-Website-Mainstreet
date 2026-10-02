@@ -1,0 +1,154 @@
+/* Mainstreet Sites SD — Public website design tokens (Day to Dusk, R3-3)
+   Use these variables everywhere. Never hard-code a color, font, size, or radius. */
+:root {
+  /* Color: day */
+  --color-forest: #1F3A2E;        /* primary: headings, primary buttons, header text */
+  --color-forest-hover: #2C4E3F;
+  --color-marigold: #E0A93B;      /* accents only: awnings, rules, icons. Never small text on light. */
+  --color-marigold-text: #B7791F; /* highlighted words in large headings (24px+) on light */
+  --color-marigold-deep: #8A5E12; /* small text accents and link hover on light */
+  --color-brick: #B5563B;         /* awning accent only */
+  --color-cream: #F3F0E6;         /* page background */
+  --color-paper: #FFFFFF;         /* cards, secondary buttons, inputs */
+  --color-ink: #1B241F;           /* strong text */
+  --color-body: #4B554F;          /* body and lead text */
+  --color-subtle: #5F675F;        /* small print, captions */
+  --color-line: #CFCAB8;          /* borders */
+  --color-line-soft: #DAD5C4;
+
+  /* Color: dusk */
+  --color-night: #0F1A24;         /* dusk band, footer */
+  --color-night-2: #1A2A38;       /* storefront bodies */
+  --color-night-3: #243442;       /* street line */
+  --color-glow: #FBEBC4;          /* lit shop windows */
+  --color-glow-shadow: rgba(245, 198, 107, 0.30);
+  --color-night-text: #E7E2D6;    /* body text on night */
+  --color-marigold-bright: #F5C66B; /* text accents on night only */
+
+  /* Type */
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text-hero: clamp(44px, 6vw, 74px);
+  --text-h2: clamp(32px, 4vw, 44px);
+  --text-h3: clamp(20px, 2vw, 24px);
+  --text-lead: clamp(17px, 1.4vw, 19px);
+  --text-body: 16px;
+  --text-small: 14px;
+  --leading-tight: 1.03;
+  --leading-body: 1.6;
+  --weight-display: 500;
+  --weight-display-strong: 600;
+
+  /* Space (8px base) */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+  --space-9: 88px; --space-10: 120px;
+  --page-max: 1264px;
+  --page-pad: clamp(24px, 6vw, 88px);
+  --section-gap: clamp(72px, 9vw, 120px);
+
+  /* Shape */
+  --radius-pill: 999px;
+  --radius-card: 12px;
+  --radius-awning: 6px;
+  --border: 1px solid var(--color-line);
+
+  /* Motion */
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --duration: 400ms;
+}
+@media (prefers-reduced-motion: reduce) { :root { --duration: 0ms; } }
+
+/* Base layout (Phase 1). The full Day to Dusk design is built in Phase 3. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-cream);
+  color: var(--color-body);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+h1 {
+  margin: 0;
+  color: var(--color-forest);
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-tight);
+}
+
+a {
+  color: var(--color-forest);
+}
+
+a:hover {
+  color: var(--color-marigold-deep);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--color-marigold);
+  outline-offset: 2px;
+}
+
+.site-header,
+main,
+.site-footer {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--space-5) var(--page-pad);
+}
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  color: var(--color-forest);
+  font-weight: var(--weight-display-strong);
+  text-decoration: none;
+}
+
+.site-header ul,
+.site-footer ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-header li a,
+.site-footer li a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.site-header a[aria-current="page"] {
+  font-weight: var(--weight-display-strong);
+}
+
+.site-footer {
+  border-top: var(--border);
+}
