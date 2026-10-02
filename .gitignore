@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Secrets and local environment
+.env
+.env.*
+
+# Database exports (never commit real submissions)
+*.sql
+*.dump
+*.csv
+exports/
+
+# System files
+.DS_Store
