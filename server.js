@@ -46,6 +46,12 @@ const SCHEMA = `
 
   CREATE INDEX IF NOT EXISTS leads_created_at_idx ON leads (created_at DESC);
   CREATE INDEX IF NOT EXISTS visits_source_idx ON visits (source);
+
+  -- Hub intake contract: a permanent id per submission, and a flag for leads the hub refused.
+  ALTER TABLE leads ADD COLUMN IF NOT EXISTS submission_id TEXT UNIQUE;
+  ALTER TABLE leads ADD COLUMN IF NOT EXISTS forward_rejected BOOLEAN NOT NULL DEFAULT false;
+  UPDATE leads SET submission_id = 'ms_' || replace(gen_random_uuid()::text, '-', '')
+   WHERE submission_id IS NULL;
 `;
 
 async function initDatabase() {
@@ -59,18 +65,20 @@ async function initDatabase() {
 
 // ---------- Contact form leads ----------
 
-const BUSINESS_TYPES = [
-  "Restaurant",
-  "HVAC",
-  "Barbershop",
-  "Car detailing",
-  "Gym / martial arts studio",
-  "Lash studio",
-  "House cleaning service",
-  "Bakery",
-  "Tattoo shop",
-  "Other (special request)",
-];
+// Form label -> the hub's business_type key (team hub specs/intake-contract.md).
+const HUB_BUSINESS_TYPES = {
+  "Restaurant": "restaurant",
+  "HVAC": "hvac",
+  "Barbershop": "barbershop",
+  "Car detailing": "car-detailing",
+  "Gym / martial arts studio": "gym-martial-arts",
+  "Lash studio": "lash-studio",
+  "House cleaning service": "house-cleaning",
+  "Bakery": "bakery",
+  "Tattoo shop": "tattoo-shop",
+  "Other (special request)": "other",
+};
+const BUSINESS_TYPES = Object.keys(HUB_BUSINESS_TYPES);
 const SPECIAL_REQUEST = "Other (special request)";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -120,8 +128,10 @@ function validateLead(body) {
 }
 
 // ---------- Forwarding to the private team hub ----------
-// Each lead is POSTed to HUB_URL + /api/intake/website, signed with INTAKE_SECRET.
-// Signature: HMAC-SHA256 of "<timestamp>.<body>", sent as X-Intake-Signature: sha256=<hex>.
+// Follows the team hub's specs/intake-contract.md: each lead is POSTed to
+// HUB_URL + /api/intake/website, signed with INTAKE_SECRET as
+// X-Intake-Signature: sha256=<hex HMAC-SHA256 of "<timestamp>.<body>">.
+// 200/201 = received, 400 = refused (stop retrying, keep the copy), anything else = retry.
 
 function hubIntakeUrl() {
   if (!process.env.HUB_URL) return null;
@@ -141,17 +151,15 @@ async function forwardLead(row) {
   if (!HUB_INTAKE_URL || !INTAKE_SECRET) return false;
 
   const body = JSON.stringify({
-    id: row.id,
+    submission_id: row.submission_id,
     name: row.name,
-    businessType: row.business_type,
-    contactMethod: row.contact_method,
+    business_type: HUB_BUSINESS_TYPES[row.business_type],
+    contact_method: row.contact_method,
     email: row.email,
     phone: row.phone,
     message: row.message,
     consent: row.consent,
-    source: row.source,
-    specialRequest: row.business_type === SPECIAL_REQUEST,
-    createdAt: row.created_at,
+    submitted_at: new Date(row.created_at).toISOString(),
   });
   const timestamp = String(Math.floor(Date.now() / 1000));
   const signature = crypto.createHmac("sha256", INTAKE_SECRET)
@@ -159,6 +167,7 @@ async function forwardLead(row) {
     .digest("hex");
 
   let ok = false;
+  let rejected = false;
   try {
     const response = await fetch(HUB_INTAKE_URL, {
       method: "POST",
@@ -170,8 +179,12 @@ async function forwardLead(row) {
       body,
       signal: AbortSignal.timeout(10000),
     });
-    ok = response.ok;
-    if (!ok) console.warn(`Hub rejected lead ${row.id}: HTTP ${response.status}`);
+    ok = response.status === 200 || response.status === 201;
+    rejected = response.status === 400;
+    if (!ok) {
+      const detail = await response.text().catch(() => "");
+      console.warn(`Hub answered HTTP ${response.status} for lead ${row.id}: ${detail.slice(0, 200)}`);
+    }
   } catch (err) {
     console.warn(`Hub unreachable for lead ${row.id}: ${err.message}`);
   }
@@ -180,9 +193,10 @@ async function forwardLead(row) {
     `UPDATE leads
         SET forward_attempts = forward_attempts + 1,
             forwarded = $2,
-            forwarded_at = CASE WHEN $2 THEN now() ELSE forwarded_at END
+            forwarded_at = CASE WHEN $2 THEN now() ELSE forwarded_at END,
+            forward_rejected = $3
       WHERE id = $1`,
-    [row.id, ok]
+    [row.id, ok, rejected]
   );
   return ok;
 }
@@ -197,6 +211,7 @@ async function retryUnforwarded() {
     const { rows } = await pool.query(
       `SELECT * FROM leads
         WHERE forwarded = false
+          AND forward_rejected = false
           AND created_at > now() - interval '24 hours'
           AND created_at < now() - interval '1 minute'
         ORDER BY created_at`
@@ -234,11 +249,11 @@ app.post(
     let row;
     try {
       const result = await pool.query(
-        `INSERT INTO leads (name, business_type, contact_method, email, phone, message, consent, source)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `INSERT INTO leads (submission_id, name, business_type, contact_method, email, phone, message, consent, source)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          RETURNING *`,
-        [lead.name, lead.businessType, lead.contactMethod, lead.email, lead.phone,
-          lead.message, lead.consent, lead.source]
+        [`ms_${crypto.randomUUID().replace(/-/g, "")}`, lead.name, lead.businessType, lead.contactMethod,
+          lead.email, lead.phone, lead.message, lead.consent, lead.source]
       );
       row = result.rows[0];
     } catch (err) {
