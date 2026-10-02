@@ -51,6 +51,7 @@
   --radius-pill: 999px;
   --radius-card: 12px;
   --radius-awning: 6px;
+  --radius-field: 10px;           /* form fields (DESIGN-SYSTEM.md section 5) */
   --border: 1px solid var(--color-line);
 
   /* Motion */
@@ -171,8 +172,10 @@ button:focus-visible {
   padding: var(--space-3) var(--space-5);
   border: 1px solid transparent;
   border-radius: var(--radius-pill);
+  font: inherit;
   font-weight: var(--weight-display-strong);
   text-decoration: none;
+  cursor: pointer;
   transition: background-color 150ms var(--ease);
 }
 
@@ -411,6 +414,140 @@ button:focus-visible {
   font-size: var(--text-h3);
 }
 
+/* Contact form */
+[hidden] {
+  display: none !important;
+}
+
+.contact-form {
+  max-width: 560px;
+  margin-bottom: var(--space-6);
+}
+
+.field {
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  border: 0;
+}
+
+.field label,
+.field legend {
+  display: block;
+  margin-bottom: var(--space-2);
+  padding: 0;
+  color: var(--color-ink);
+  font-weight: var(--weight-display-strong);
+}
+
+.optional {
+  color: var(--color-subtle);
+  font-weight: 400;
+}
+
+.field input[type="text"],
+.field input[type="email"],
+.field input[type="tel"],
+.field select,
+.field textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border);
+  border-radius: var(--radius-field);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font: inherit;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  outline: 2px solid var(--color-marigold);
+  outline-offset: 1px;
+}
+
+.field [aria-invalid] {
+  border-color: var(--color-marigold-deep);
+  border-width: 2px;
+}
+
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+}
+
+.field .choice {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  margin: 0;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.field .consent {
+  align-items: flex-start;
+  color: var(--color-body);
+}
+
+.choice input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--color-forest);
+}
+
+.consent input {
+  margin-top: 3px;
+}
+
+.field-error {
+  margin: var(--space-2) 0 0;
+  color: var(--color-marigold-deep);
+  font-size: var(--text-small);
+  font-weight: var(--weight-display-strong);
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+}
+
+.contact-form button[disabled] {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.form-status:empty {
+  display: none;
+}
+
+.form-status {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-field);
+  font-weight: var(--weight-display-strong);
+}
+
+.form-status.is-success {
+  border: 2px solid var(--color-forest);
+  background: var(--color-paper);
+  color: var(--color-forest);
+}
+
+.form-status.is-error {
+  border: 2px solid var(--color-marigold-deep);
+  background: var(--color-paper);
+  color: var(--color-marigold-deep);
+}
+
 /* Temporary placeholders (replaced when real content or assets arrive) */
 .placeholder {
   display: flex;
@@ -429,8 +566,7 @@ button:focus-visible {
   text-align: left;
 }
 
-.package-image,
-.form-placeholder {
+.package-image {
   min-height: 200px;
   margin-bottom: var(--space-5);
 }
