@@ -1,6 +1,36 @@
-// Public site behavior: phone menu, sticky phone button, footer year.
+// Public site behavior: marketing source, phone menu, sticky phone button,
+// contact form, footer year.
 
 document.documentElement.classList.add("js");
+
+// Marketing source: keep the first utm_source this browser arrived with.
+const SOURCE_KEY = "mainstreet_source";
+
+function getSource() {
+  let saved = null;
+  try {
+    saved = localStorage.getItem(SOURCE_KEY);
+  } catch (err) {
+    // Storage can be blocked (private mode); fall back to the current URL.
+  }
+  if (saved) return saved;
+
+  const fromUrl = (new URLSearchParams(location.search).get("utm_source") || "")
+    .trim()
+    .toLowerCase()
+    .slice(0, 100);
+  const source = fromUrl || "direct";
+  if (fromUrl) {
+    try {
+      localStorage.setItem(SOURCE_KEY, source);
+    } catch (err) {
+      // Ignore: the source still applies to this page.
+    }
+  }
+  return source;
+}
+
+const visitorSource = getSource();
 
 // Phone menu
 const menuToggle = document.querySelector(".menu-toggle");
@@ -49,6 +79,128 @@ if (stickyCta && hero && "IntersectionObserver" in window) {
       updateSticky();
     }).observe(closingBand);
   }
+}
+
+// Contact form
+const contactForm = document.getElementById("contact-form");
+
+if (contactForm) {
+  const fields = contactForm.elements;
+  const status = document.getElementById("form-status");
+  const submitButton = contactForm.querySelector('button[type="submit"]');
+  const methodFields = contactForm.querySelectorAll("[data-method-field]");
+  const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const chosenMethod = () => fields.contactMethod.value;
+
+  function showMethodField() {
+    methodFields.forEach((field) => {
+      field.hidden = field.dataset.methodField !== chosenMethod();
+    });
+  }
+
+  function usPhoneDigits(value) {
+    let digits = value.replace(/\D/g, "");
+    if (digits.length === 11 && digits.startsWith("1")) digits = digits.slice(1);
+    return digits.length === 10 ? digits : null;
+  }
+
+  function setError(input, errorId, message) {
+    const error = document.getElementById(errorId);
+    error.textContent = message;
+    error.hidden = !message;
+    if (input instanceof Element) {
+      input.toggleAttribute("aria-invalid", Boolean(message));
+    }
+  }
+
+  function validate() {
+    const problems = [];
+    const check = (input, errorId, message) => {
+      setError(input, errorId, message);
+      if (message) problems.push(input instanceof Element ? input : input[0]);
+    };
+
+    check(fields.name, "name-error", fields.name.value.trim() ? "" : "Please enter your name.");
+    check(fields.businessType, "business-type-error",
+      fields.businessType.value ? "" : "Please choose your business type.");
+    check(fields.contactMethod, "contact-method-error",
+      chosenMethod() ? "" : "Please choose Email or Text.");
+
+    const email = fields.email.value.trim();
+    let emailMessage = "";
+    if (chosenMethod() === "email") {
+      if (!email) emailMessage = "Please enter your email.";
+      else if (!EMAIL_PATTERN.test(email)) emailMessage = "Please enter a valid email, like name@example.com.";
+    }
+    check(fields.email, "email-error", emailMessage);
+
+    const phone = fields.phone.value.trim();
+    let phoneMessage = "";
+    if (chosenMethod() === "text") {
+      if (!phone) phoneMessage = "Please enter your phone number.";
+      else if (!usPhoneDigits(phone)) phoneMessage = "Please enter a valid 10-digit U.S. phone number.";
+    }
+    check(fields.phone, "phone-error", phoneMessage);
+
+    check(fields.consent, "consent-error",
+      fields.consent.checked ? "" : "Please check the box so we can send your info document.");
+
+    return problems;
+  }
+
+  contactForm.addEventListener("change", (event) => {
+    if (event.target.name === "contactMethod") showMethodField();
+  });
+
+  contactForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    status.textContent = "";
+    status.className = "form-status";
+
+    const problems = validate();
+    if (problems.length) {
+      problems[0].focus();
+      return;
+    }
+
+    const method = chosenMethod();
+    const payload = {
+      name: fields.name.value.trim(),
+      businessType: fields.businessType.value,
+      contactMethod: method,
+      email: method === "email" ? fields.email.value.trim() : "",
+      phone: method === "text" ? fields.phone.value.trim() : "",
+      message: fields.message.value.trim(),
+      consent: fields.consent.checked,
+      website: fields.website.value,
+      source: visitorSource,
+    };
+
+    submitButton.disabled = true;
+    try {
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Request failed");
+
+      contactForm.reset();
+      showMethodField();
+      status.textContent = result.message;
+      status.classList.add("is-success");
+    } catch (err) {
+      status.textContent = "Sorry, your message could not be sent. Please try again.";
+      status.classList.add("is-error");
+    } finally {
+      submitButton.disabled = false;
+      status.focus();
+    }
+  });
+
+  showMethodField();
 }
 
 // Footer year
