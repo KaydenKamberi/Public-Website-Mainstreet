@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>About — Mainstreet Sites SD</title>
+  <meta name="description" content="Meet Kevin, Kayden, and Cheyenne, the team behind Mainstreet Sites SD.">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-192.png">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
@@ -11,36 +12,108 @@
   <script src="/script.js" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
   <header class="site-header">
-    <!-- Temporary logo: swap for brand/logo.svg once the SVG files are available. -->
-    <a class="logo" href="/">
-      <img src="/images/favicon-192.png" alt="" width="32" height="32">
-      <span>Mainstreet Sites SD</span>
-    </a>
-    <nav aria-label="Main">
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/offerings.html">Offerings</a></li>
-        <li><a href="/about.html" aria-current="page">About</a></li>
-        <li><a href="/contact.html">Contact</a></li>
-      </ul>
-    </nav>
+    <div class="header-inner">
+      <!-- Temporary logo: swap for brand/logo.svg once the SVG files are available. -->
+      <a class="logo" href="/">
+        <img src="/images/favicon-192.png" alt="" width="32" height="32">
+        <span>Mainstreet Sites SD</span>
+      </a>
+      <span class="logo-place">San Diego</span>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav class="site-nav" id="site-nav" aria-label="Main">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/offerings.html">Offerings</a></li>
+          <li><a href="/about.html" aria-current="page">About</a></li>
+          <li><a href="/contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      <a class="button button-primary header-cta" href="/contact.html">Get My Info Doc →</a>
+    </div>
   </header>
 
-  <main>
-    <h1>About</h1>
+  <main id="main">
+    <section class="page-hero" data-hero>
+      <div class="container">
+        <h1>About Mainstreet Sites SD</h1>
+        <p class="lead">Mainstreet Sites SD is run by co-founders Kevin and Kayden, with team member Cheyenne. We want to grow the skills available to us into a service for old-fashioned businesses that can't compete and grow with the future.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Why we started</h2>
+        <p>Mainstreet Sites SD started as a way to build websites for trade workers. Gathering each customer's information for their site in a limited amount of time was very difficult, so the business turned to restaurants, whose information is easier to gather. Restaurants lose customers when people can't find them online, and Mainstreet Sites SD builds the site they're missing.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Our experience</h2>
+        <ul class="check-list">
+          <li>Built and launched tradesitessd.com</li>
+          <li>Building a website for Kevin's dad's contracting business (in progress)</li>
+          <li>Taking the Global IT class</li>
+          <li>Took a web design class last year</li>
+        </ul>
+        <!-- [NEEDS ASSET: screenshots of tradesitessd.com and Kevin's dad's site, labeled accurately] -->
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>How we work</h2>
+        <ul class="check-list">
+          <li>Every restaurant owner sees a demo of their own website before committing.</li>
+          <li>We pitch in person, meeting the owner or manager face to face.</li>
+          <li>Once we have customers, their websites will be shown as examples on this site.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Meet Cheyenne</h2>
+        <p class="placeholder placeholder-text">[NEEDS CONTENT: Cheyenne's short story and real experience, in his words]</p>
+      </div>
+    </section>
+
+    <section class="closing-band" data-closing-band>
+      <div class="container">
+        <h2>Want a website for your business?</h2>
+        <p>Tell us what kind of business you have, and we'll send you an info document made for it within 5 minutes.</p>
+        <a class="button button-closing" href="/contact.html">Get My Info Doc →</a>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
-    <nav aria-label="Footer">
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/offerings.html">Offerings</a></li>
-        <li><a href="/about.html" aria-current="page">About</a></li>
-        <li><a href="/contact.html">Contact</a></li>
-        <li><a href="/privacy.html">Privacy Policy</a></li>
+    <div class="footer-inner">
+      <p class="footer-brand">Mainstreet Sites SD — Websites for local business</p>
+      <ul class="footer-facts">
+        <li>Serving all of San Diego</li>
+        <li>Weekends, and weekdays 6:00 pm to 8:00 pm</li>
+        <li><a href="mailto:mainstreetsitessd@gmail.com">mainstreetsitessd@gmail.com</a></li>
+        <!-- [NEEDS CONTENT: business phone number] Add an sms: link here once it exists. -->
       </ul>
-    </nav>
+      <nav aria-label="Footer">
+        <ul class="footer-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/offerings.html">Offerings</a></li>
+          <li><a href="/about.html" aria-current="page">About</a></li>
+          <li><a href="/contact.html">Contact</a></li>
+          <li><a href="/privacy.html">Privacy Policy</a></li>
+        </ul>
+      </nav>
+      <p class="footer-copy">© <span data-year>2026</span> Mainstreet Sites SD</p>
+    </div>
   </footer>
+
+  <div class="sticky-cta" data-sticky-cta>
+    <a class="button button-primary" href="/contact.html">Get My Info Doc →</a>
+  </div>
 </body>
 </html>

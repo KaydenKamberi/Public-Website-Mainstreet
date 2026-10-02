@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mainstreet Sites SD — Websites for local business</title>
+  <meta name="description" content="Mainstreet Sites SD builds and manages websites for local businesses in San Diego, starting with family-owned restaurants.">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-192.png">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
@@ -11,36 +12,175 @@
   <script src="/script.js" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
   <header class="site-header">
-    <!-- Temporary logo: swap for brand/logo.svg once the SVG files are available. -->
-    <a class="logo" href="/">
-      <img src="/images/favicon-192.png" alt="" width="32" height="32">
-      <span>Mainstreet Sites SD</span>
-    </a>
-    <nav aria-label="Main">
-      <ul>
-        <li><a href="/" aria-current="page">Home</a></li>
-        <li><a href="/offerings.html">Offerings</a></li>
-        <li><a href="/about.html">About</a></li>
-        <li><a href="/contact.html">Contact</a></li>
-      </ul>
-    </nav>
+    <div class="header-inner">
+      <!-- Temporary logo: swap for brand/logo.svg once the SVG files are available. -->
+      <a class="logo" href="/">
+        <img src="/images/favicon-192.png" alt="" width="32" height="32">
+        <span>Mainstreet Sites SD</span>
+      </a>
+      <span class="logo-place">San Diego</span>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav class="site-nav" id="site-nav" aria-label="Main">
+        <ul>
+          <li><a href="/" aria-current="page">Home</a></li>
+          <li><a href="/offerings.html">Offerings</a></li>
+          <li><a href="/about.html">About</a></li>
+          <li><a href="/contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      <a class="button button-primary header-cta" href="/contact.html">Get My Info Doc →</a>
+    </div>
   </header>
 
-  <main>
-    <h1>Websites for local businesses in San Diego.</h1>
+  <main id="main">
+    <section class="hero" data-hero>
+      <div class="container hero-grid">
+        <div class="hero-heading">
+          <h1>Websites for <span class="highlight">local businesses</span> in San Diego.</h1>
+          <div class="gold-rule" aria-hidden="true"></div>
+        </div>
+        <div class="hero-body">
+          <p class="lead"><strong>Mainstreet Sites SD builds and manages websites for local businesses,</strong> starting with San Diego's family-owned restaurants. We build a demo of your site before you decide, then keep it up to date every month.</p>
+          <div class="button-pair">
+            <a class="button button-primary" href="/contact.html">Get My Info Doc →</a>
+            <a class="button button-secondary" href="/offerings.html">See What's Included</a>
+          </div>
+          <p class="price-line">$60 the first month, then $40 a month. <a href="/offerings.html">See full pricing</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="dusk-band" aria-label="Example sites and key facts">
+      <div class="container">
+        <ul class="storefront-street">
+          <li class="storefront">
+            <!-- [NEEDS ASSET: example restaurant websites (demo sites)] -->
+            <div class="placeholder storefront-window">Example restaurant site coming soon</div>
+          </li>
+          <li class="storefront">
+            <!-- [NEEDS ASSET: example restaurant websites (demo sites)] -->
+            <div class="placeholder storefront-window">Example restaurant site coming soon</div>
+          </li>
+          <li class="storefront">
+            <!-- [NEEDS ASSET: example restaurant websites (demo sites)] -->
+            <div class="placeholder storefront-window">Example restaurant site coming soon</div>
+          </li>
+        </ul>
+        <ul class="fact-lines">
+          <li><strong>Demo first.</strong> See your site before you decide.</li>
+          <li><strong>You own it.</strong> Your website stays yours.</li>
+          <li><strong>Updates included.</strong> Managed every month.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Built for San Diego's <span class="highlight">local businesses</span>.</h2>
+        <p>Restaurants, HVAC, barbershops, car detailing, gyms and martial arts studios, lash studios, house cleaning, bakeries, and tattoo shops.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Why a website matters</h2>
+        <p>Many people search online and look through a business's website before visiting in person. Without a website, they may lose interest or decide not to make the trip.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>What's included</h2>
+        <div class="two-col">
+          <div>
+            <h3>Your website</h3>
+            <p>For restaurants, your website includes:</p>
+            <ul class="check-list">
+            <li>Menu</li>
+            <li>Prices</li>
+            <li>Deals and combos</li>
+            <li>Location</li>
+            <li>Reviews</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Monthly management</h3>
+            <p>Every month, we handle:</p>
+            <ul class="check-list">
+            <li>Content updates (hours, menu changes, prices, photos, specials)</li>
+            <li>Checking that your site is up and its buttons work</li>
+            <li>Domain renewal care</li>
+            <li>Google Business Profile updates</li>
+            <li>A monthly report</li>
+            <li>Up to 2 edits a month</li>
+            <li>Seasonal refreshes (holiday hours, promotions)</li>
+            </ul>
+          </div>
+        </div>
+        <p><a href="/offerings.html">See what's included</a></p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>How it works</h2>
+        <ol class="steps">
+          <li class="card">
+            <h3>We build a demo</h3>
+            <p>We research your business and build a demo of your website before we meet.</p>
+          </li>
+          <li class="card">
+            <h3>We show it to you</h3>
+            <p>We meet you or your manager in person to show you the demo.</p>
+          </li>
+          <li class="card">
+            <h3>You decide</h3>
+            <p>You see your site before you decide.</p>
+          </li>
+          <li class="card">
+            <h3>We launch and keep it updated</h3>
+            <p>We launch your site and keep it up to date every month.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="closing-band" data-closing-band>
+      <div class="container">
+        <h2>Want a website for your business?</h2>
+        <p>Tell us what kind of business you have, and we'll send you an info document made for it within 5 minutes.</p>
+        <a class="button button-closing" href="/contact.html">Get My Info Doc →</a>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
-    <nav aria-label="Footer">
-      <ul>
-        <li><a href="/" aria-current="page">Home</a></li>
-        <li><a href="/offerings.html">Offerings</a></li>
-        <li><a href="/about.html">About</a></li>
-        <li><a href="/contact.html">Contact</a></li>
-        <li><a href="/privacy.html">Privacy Policy</a></li>
+    <div class="footer-inner">
+      <p class="footer-brand">Mainstreet Sites SD — Websites for local business</p>
+      <ul class="footer-facts">
+        <li>Serving all of San Diego</li>
+        <li>Weekends, and weekdays 6:00 pm to 8:00 pm</li>
+        <li><a href="mailto:mainstreetsitessd@gmail.com">mainstreetsitessd@gmail.com</a></li>
+        <!-- [NEEDS CONTENT: business phone number] Add an sms: link here once it exists. -->
       </ul>
-    </nav>
+      <nav aria-label="Footer">
+        <ul class="footer-links">
+          <li><a href="/" aria-current="page">Home</a></li>
+          <li><a href="/offerings.html">Offerings</a></li>
+          <li><a href="/about.html">About</a></li>
+          <li><a href="/contact.html">Contact</a></li>
+          <li><a href="/privacy.html">Privacy Policy</a></li>
+        </ul>
+      </nav>
+      <p class="footer-copy">© <span data-year>2026</span> Mainstreet Sites SD</p>
+    </div>
   </footer>
+
+  <div class="sticky-cta" data-sticky-cta>
+    <a class="button button-primary" href="/contact.html">Get My Info Doc →</a>
+  </div>
 </body>
 </html>
