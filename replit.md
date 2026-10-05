@@ -7,5 +7,7 @@
 - Replit supplies `DATABASE_URL`. On startup, the imported server creates its development `leads` and `visits` tables if needed.
 - Check `/api/health` for server and database status.
 - There is no build step. Public pages are served directly from `public/`; extensionless routes such as `/contact` also work.
-- This import is a foundation, not the finished specification: contact submission and admin behavior are not implemented. No admin password or hub credentials are needed to run this version.
+- Contact submissions are implemented at `POST /api/leads` and saved in PostgreSQL. Admin behavior is not implemented. No admin password or hub credentials are needed to run the public site.
+- Optional hub forwarding requires `HUB_URL` and `INTAKE_SECRET` in Replit Secrets. Without them, submissions remain saved locally and marked not forwarded; the startup warning is expected. Do not invent these values.
+- Setup verification: `/api/health` reports `{"status":"ok","database":"connected"}`; Home, About, Offerings, Contact, and Privacy return HTTP 200. Desktop Home and the 375px Contact layout render in preview. No application-code changes were needed.
 - Before publishing, review the imported startup schema creation against Replit's managed production schema process; production schema changes should be applied through Publish, not startup DDL.
