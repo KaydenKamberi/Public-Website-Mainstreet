@@ -500,6 +500,36 @@ app.delete("/api/admin/leads/:id", requireAdmin, async (req, res) => {
   }
 });
 
+// Marketing dashboard: visits, leads, and conversion rate by source.
+app.get("/api/admin/stats", requireAdmin, async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "database not configured" });
+  const allTime = req.query.range === "all";
+  try {
+    const { rows } = await pool.query(
+      `WITH v AS (
+         SELECT source, count(*)::int AS visits FROM visits
+          WHERE $1::boolean OR created_at > now() - interval '30 days' GROUP BY source),
+       l AS (
+         SELECT source, count(*)::int AS leads FROM leads
+          WHERE $1::boolean OR created_at > now() - interval '30 days' GROUP BY source)
+       SELECT COALESCE(v.source, l.source) AS source,
+              COALESCE(v.visits, 0) AS visits,
+              COALESCE(l.leads, 0) AS leads
+         FROM v FULL OUTER JOIN l ON v.source = l.source
+        ORDER BY visits DESC, leads DESC, source`,
+      [allTime]
+    );
+    const rate = (leads, visits) => (visits > 0 ? Math.round((leads / visits) * 1000) / 10 : null);
+    const sources = rows.map((row) => ({ ...row, conversion: rate(row.leads, row.visits) }));
+    const visits = sources.reduce((sum, row) => sum + row.visits, 0);
+    const leads = sources.reduce((sum, row) => sum + row.leads, 0);
+    res.json({ range: allTime ? "all" : "30d", sources, total: { visits, leads, conversion: rate(leads, visits) } });
+  } catch (err) {
+    console.error("Loading stats failed:", err.message);
+    res.status(500).json({ error: "load failed" });
+  }
+});
+
 app.get("/api/health", async (req, res) => {
   let database = "not configured";
   if (pool) {
