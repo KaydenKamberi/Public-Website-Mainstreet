@@ -1,6 +1,6 @@
 # Websites for Your Gym and Martial Arts — Mainstreet Sites SD
 
-*Info document for gyms and studios · Status: APPROVED by Kevin, 2026-09-29*
+*Info document for gyms and studios · Status: APPROVED by Kevin, 2026-09-29 · Updated 2026-10-08 by CR-001 ($45 a month, cash or Venmo, reservations)*
 
 Thanks for reaching out! Here's everything you need to know about getting a website for your gym or studio, and what we'll need from you.
 
@@ -34,19 +34,21 @@ Optional sections like offers and badges only appear if they're true for your bu
 - Domain renewal care
 - Google Business Profile updates
 - A monthly report
-- Up to 2 edits a month (content updates and seasonal refreshes don't count toward these)
+- Up to 2 edits a month (content updates, seasonal refreshes, and setting up reservations don't count toward these)
 - Seasonal refreshes (holiday hours, promotions)
+
+**Reservations (optional, no extra cost from us):** If you want, we connect a reservations service to your website: a Reserve or Book Now button (or a booking widget) linked to a booking service in your name, like OpenTable, Resy, Tock, Yelp, Square Appointments, Calendly, Booksy, or Vagaro (you pay any service fees), or a reservation request form that emails you. A request is not a confirmed booking. We never store your customers' booking information.
 
 ## Price
 
 - **$60** for the first month
-- **$40 a month** after that
+- **$45 a month** after that
 - Building your website is included in these payments. No big upfront cost.
-- **Minimum:** 4 payments ($60 + $40 + $40 + $40) and 4 months. After that, you choose how long to keep going.
+- **Minimum:** 4 payments ($60 + $45 + $45 + $45 = $195 total) and 4 months. After that, you choose how long to keep going.
 - **You own your website.** If you ever stop, you keep it.
 
 - **Your web address (domain)** is bought **in your name**, about $12 a year, paid by you. We help you pick it and set it up.
-- **How to pay:** cash or Zelle.
+- **How to pay:** cash or Venmo.
 
 ## How it works
 
@@ -67,6 +69,7 @@ Optional sections like offers and badges only appear if they're true for your bu
 - Your logo, if you have one
 - Whether you have a Google Business Profile (if not, we'll help you set one up)
 - Links to your reviews on Google, Yelp, or Facebook
+- Yes or no: Do you want a reservations service connected to your website? If yes, which booking service you use (or want), or whether you'd rather have a request form.
 
 **For your gym or studio:**
 
