@@ -5,7 +5,7 @@ For the public website repo (built with Claude Code on GitHub, run on Replit). *
 - `specs/spec.md`: the approved website spec (source of truth)
 - `specs/design-system/`: Day to Dusk design system (`DESIGN-SYSTEM.md` + `tokens.css`), the source of truth for the look
 - `specs/info-docs/`: the 9 approved info documents
-- `specs/constitution.md`, `specs/business-brief.md`, `specs/design-reference.png`: background
+- `specs/constitution.md`, `specs/business-brief.md`, `specs/design-reference.webp`: background
 - `brand/`: logo files and favicons
 - `CLAUDE.md`: rules Claude Code reads automatically
 
