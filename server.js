@@ -286,10 +286,20 @@ app.get("/api/health", async (req, res) => {
 });
 
 // Lets /offerings serve offerings.html, so links work with or without ".html".
+// "/contact/" works like "/contact" (CR-002 D15). Leading slashes are collapsed
+// so a path like "//example.com/" can never redirect to another site.
+app.use((req, res, next) => {
+  if (req.path.length > 1 && req.path.endsWith("/") && !req.path.startsWith("/api/")) {
+    const clean = "/" + req.path.replace(/^\/+/, "").replace(/\/+$/, "");
+    return res.redirect(301, clean + req.url.slice(req.path.length));
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"] }));
 
 app.use((req, res) => {
-  res.status(404).type("text").send("Page not found.");
+  res.status(404).sendFile(path.join(__dirname, "public", "404.html"));
 });
 
 initDatabase()

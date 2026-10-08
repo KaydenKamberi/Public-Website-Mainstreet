@@ -1462,3 +1462,5 @@ main:has(> .closing-band:last-child) + .site-footer {
 @media (min-width: 768px) { .work-wall { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1024px) { .work-wall { grid-template-columns: repeat(3, 1fr); } }
 .step-img { aspect-ratio: 10 / 7; }
+
+.not-found-links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); margin: var(--space-5) 0 0; padding: 0; list-style: none; }
