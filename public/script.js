@@ -203,6 +203,35 @@ if (contactForm) {
   showMethodField();
 }
 
+// Storefront street: windows light up once when scrolled into view, and the
+// phone-only sideways scroller can take keyboard focus.
+const street = document.querySelector(".street");
+
+if (street) {
+  if ("IntersectionObserver" in window) {
+    const glow = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        street.classList.add("is-lit");
+        glow.disconnect();
+      }
+    }, { threshold: 0.3 });
+    glow.observe(street);
+  } else {
+    street.classList.add("is-lit");
+  }
+
+  const scroller = street.querySelector(".street-scroll");
+  const phone = window.matchMedia("(max-width: 767px)");
+  const setScrollFocus = () => {
+    if (phone.matches) scroller.setAttribute("tabindex", "0");
+    else scroller.removeAttribute("tabindex");
+  };
+  if (scroller) {
+    setScrollFocus();
+    phone.addEventListener("change", setScrollFocus);
+  }
+}
+
 // Footer year
 document.querySelectorAll("[data-year]").forEach((el) => {
   el.textContent = String(new Date().getFullYear());
