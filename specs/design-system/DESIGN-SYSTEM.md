@@ -120,6 +120,15 @@ Load from Google Fonts: Fraunces (500, 600) and Instrument Sans (400, 500, 600).
 
 **Motion added by CR-002:** sections and cards fade in and rise `--rise` when scrolled into view (600ms, list items `--stagger` apart). Content is hidden for this only after the page script runs (`motion-ready`), so a failed script never hides content. Buttons lift 1px on hover. Cards lift on hover. The header stays at the top on tablet and desktop with a soft shadow after scrolling. Device phones and stickers float gently. All of it is off under `prefers-reduced-motion`.
 
+### Components updated by CR-003 (2026-10-08)
+
+| Component | Look | Where |
+| --- | --- | --- |
+| **Closing band (updated)** | A night radial gradient, a thin marigold-and-cream awning stripe along the top, the text on the left and the button on the right from 768px. The button is 56px with a lead-size label, a marigold glow ring on hover, and an arrow that slides 4px. | Bottom of Home, Offerings, About |
+| **Footer (updated)** | Compact. From 768px: three columns (name + tagline + service area, hours, email; page links in 2 columns; "We accept" + "Follow us"), then a copyright line. Links have no underline until hover (a thin line grows in). Every link is at least 44px tall. | Every page |
+| **Payment badge** | Night-2 pill with a small circle icon ("V" on marigold-bright, "$" on glow) and the method name. Text only, no third-party logos. | Footer |
+| **Social button** | 44px circle with a line icon; marigold-bright fill on hover. Hidden until the accounts exist. | Footer |
+
 ## 6. Layout
 
 - Content width 1264px max, not counting the side padding of 24px (phone) to 88px (desktop).
