@@ -1188,3 +1188,15 @@ main:has(> .closing-band:last-child) + .site-footer {
     align-items: start;
   }
 }
+
+
+/* Privacy */
+.prose h2 {
+  margin-top: var(--space-6);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-display-strong);
+}
+
+.prose h2:first-child {
+  margin-top: 0;
+}
