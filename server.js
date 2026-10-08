@@ -429,6 +429,77 @@ app.post("/api/admin/logout", adminJson, (req, res) => {
   res.json({ loggedIn: false });
 });
 
+const LEAD_COLUMNS = `id, name, business_type, contact_method, email, phone, message, consent, source,
+  status, response_note, created_at, responded_at, forwarded, forwarded_at, forward_rejected, forward_attempts`;
+const LEAD_FILTERS = {
+  all: "TRUE",
+  new: "status = 'new'",
+  responded: "status = 'responded'",
+  unforwarded: "forwarded = false",
+};
+
+function leadId(req) {
+  const id = Number(req.params.id);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+app.get("/api/admin/leads", requireAdmin, async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "database not configured" });
+  const where = LEAD_FILTERS[req.query.filter] || LEAD_FILTERS.all;
+  try {
+    const { rows } = await pool.query(
+      `SELECT ${LEAD_COLUMNS} FROM leads WHERE ${where} ORDER BY created_at DESC LIMIT 500`
+    );
+    res.json({ leads: rows });
+  } catch (err) {
+    console.error("Loading leads failed:", err.message);
+    res.status(500).json({ error: "load failed" });
+  }
+});
+
+app.patch("/api/admin/leads/:id", requireAdmin, adminJson, async (req, res) => {
+  const id = leadId(req);
+  const body = req.body || {};
+  if (!id || !pool) return res.status(400).json({ error: "bad request" });
+  const status = body.status === undefined ? null : body.status;
+  if (status !== null && status !== "new" && status !== "responded") {
+    return res.status(400).json({ error: "bad status" });
+  }
+  const note = body.responseNote === undefined ? null : text(body.responseNote, 2000);
+  try {
+    const { rows } = await pool.query(
+      `UPDATE leads
+          SET status = COALESCE($2, status),
+              responded_at = CASE
+                WHEN $2 = 'responded' AND status <> 'responded' THEN now()
+                WHEN $2 = 'new' THEN NULL
+                ELSE responded_at END,
+              response_note = CASE WHEN $3::boolean THEN $4 ELSE response_note END
+        WHERE id = $1
+        RETURNING ${LEAD_COLUMNS}`,
+      [id, status, body.responseNote !== undefined, note]
+    );
+    if (!rows.length) return res.status(404).json({ error: "not found" });
+    res.json({ lead: rows[0] });
+  } catch (err) {
+    console.error("Updating lead failed:", err.message);
+    res.status(500).json({ error: "update failed" });
+  }
+});
+
+app.delete("/api/admin/leads/:id", requireAdmin, async (req, res) => {
+  const id = leadId(req);
+  if (!id || !pool) return res.status(400).json({ error: "bad request" });
+  try {
+    const { rowCount } = await pool.query("DELETE FROM leads WHERE id = $1", [id]);
+    if (!rowCount) return res.status(404).json({ error: "not found" });
+    res.json({ deleted: true });
+  } catch (err) {
+    console.error("Deleting lead failed:", err.message);
+    res.status(500).json({ error: "delete failed" });
+  }
+});
+
 app.get("/api/health", async (req, res) => {
   let database = "not configured";
   if (pool) {
