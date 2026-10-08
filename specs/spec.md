@@ -2,7 +2,7 @@
 
 ## Specification Status
 
-`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions.
+`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions. Updated 2026-10-08 by CR-002: design polish, custom section images, concept sites, work wall, reviews section (hidden until real reviews), 404 page.
 
 This document defines the requirements for this student's business website.
 
@@ -108,6 +108,8 @@ Rules:
 - Temporary placeholders must be obviously temporary (for example, a gray box labeled "Example restaurant site coming soon").
 - Example sites are shown inside the **storefront cards** on the dusk band (glowing shop windows), each with a caption starting "Example:".
 - Client demos appear only after the owner agrees. Until then, show an anonymized version (for example, "Asian fusion restaurant, National City").
+- **Custom section images (CR-002 D13).** Our own sections use custom scenes built in brand colors from our concept sites (a phone search, the demo-to-launch steps, what's included, the reservation request form, the info doc preview), not generic stock photos. Photos of food or shops appear only inside concept or client demo sites.
+- **Concept sites (CR-002 D18).** Three concept sites, *Olivo & Sal* (restaurant), *Crumb & Co.* (bakery), and *Fade & Steel* (barbershop), each carry the banner "Concept site by Mainstreet Sites SD · Not a real business · Sample content and prices" and show prices as "$00". Their screenshots fill the Home storefront windows ("Example: concept …") and the About work wall. `[NEEDS DECISION: final concept site names, checked against real San Diego businesses (CR-002 D16)]`
 
 ## Other Branding Requirements
 
@@ -177,6 +179,9 @@ No social media icons or links appear on the site until accounts exist.
 - Every page records a visit with its `utm_source` (see section 9).
 - The email address, once provided, uses a `mailto:` link. The phone number, once provided, uses an `sms:` link for texting.
 - Pages remain usable at 375 pixels wide with no horizontal scrolling.
+- Section labels (eyebrows) sit above section headings, e.g. "Pricing", "How it works", "The team", "What's included", "Our work" (CR-002 D3).
+- The header stays at the top of the screen on tablet and desktop (CR-002 D4). Sections and cards fade in as they scroll into view; nothing moves under reduced motion, and content never depends on the script loading.
+- A branded `404.html` page (not in the navigation) links back to Home and Contact; URLs with a trailing slash work (CR-002 D15).
 
 # 4. Home Page
 
@@ -205,9 +210,10 @@ Lead text under the heading: "**Mainstreet Sites SD builds and manages websites 
 4. **Who it's for:** one line, "Built for San Diego's local businesses." ("local businesses" is the highlight phrase, in marigold-text, not italic) followed by the business types from the contact form's dropdown, as plain text: restaurants, HVAC, barbershops, car detailing, gyms and martial arts studios, lash studios, house cleaning, bakeries, and tattoo shops.
 5. **Why a website matters:** many people search online before visiting a business; without a site, they may lose interest or not make the trip.
 6. **What's included:** the website (for restaurants: menu, prices, deals and combos, location, reviews, and an optional reservations service at no extra cost from us) and the monthly management, with a "See what's included" text link to Offerings.
-7. **How it works:** 4 numbered steps: we build a demo, we show it to you, you decide, we launch and keep it updated.
-8. **Closing band** with the primary button.
-9. **Footer.**
+7. **How it works:** 4 numbered steps, each with its own image: we build a demo, we show it to you, you decide, we launch and keep it updated.
+8. **Reviews** (CR-002 P9): stays hidden until at least one real review with written permission exists.
+9. **Closing band** with the primary button.
+10. **Footer.**
 
 ## Visual Content
 
@@ -284,6 +290,7 @@ One package (website build plus ongoing monthly management). The cost of buildin
   - Payment methods: cash or Venmo.
   - `[NEEDS DECISION: the handoff process when a client cancels]`
 - How it starts: Mainstreet Sites SD builds a demo of your restaurant's website and shows it to you in person before you decide.
+- Layout (CR-002): a large "$45 a month" price display, a 4-payment timeline (Month 1 $60, Months 2-4 $45, minimum total $195), the reservations block as a callout, and a short FAQ: "Can I cancel?", "Do I own my website?", "What counts as an edit?", "How do I pay?", "Does the reservations service cost extra?" (answers reuse the facts above).
 - Image: `[NEEDS ASSET: example restaurant websites (demo sites)]`
 - CTA: "Get Started →" at the bottom of the package card (Contact page)
 
@@ -333,6 +340,8 @@ Mainstreet Sites SD started as a way to build websites for trade workers. Gather
 
 ## Relevant Experience or Skills
 
+Not shown on the site for now (CR-002 D17); the About page shows the "Websites we've made" wall instead. Kept here to bring back later:
+
 - Built and launched tradesitessd.com
 - Building a website for Kevin's dad's contracting business (in progress)
 - Taking the Global IT class
@@ -344,7 +353,7 @@ Mainstreet Sites SD started as a way to build websites for trade workers. Gather
 - The team pitches in person, meeting the owner or manager face to face.
 - Cheyenne: `[NEEDS CONTENT: Cheyenne's short story and real experience, in his words]`
 - Once the business has customers, their websites will be shown as examples on this site.
-- Reviews: `[NEEDS CONTENT: customer reviews or testimonials (none yet)]`. No reviews section appears until real reviews exist.
+- Reviews: `[NEEDS CONTENT: customer reviews or testimonials (none yet)]`. The reviews section is built but stays hidden until real reviews exist. After a client's site launches, Kevin or Kayden asks for a short review and written permission to show it (first name, business name) and to show their site as an example; each approved review is added by a small CR (CR-002 D7). No star ratings unless they come from a real source (D8).
 
 ## Visual Content
 
@@ -358,10 +367,11 @@ Mainstreet Sites SD started as a way to build websites for trade workers. Gather
 
 ## Acceptance Criteria
 
-- Kevin and Kayden appear as co-founders and Cheyenne as a team member. No last names, ages, schools, or home locations appear.
-- The four experience items appear exactly as listed, and Kevin's dad's site is described as in progress.
+- Kevin and Kayden appear as co-founders and Cheyenne as a team member (team cards with initials, no photos). No last names, ages, schools, or home locations appear.
+- The "Websites we've made" wall shows the concept sites, each labeled as a concept and not a real business, with the line "Concept sites for now. Client sites will be added here, with each owner's permission." (CR-002 D17)
 - The reason for switching from trade workers to restaurants is stated.
 - Screenshots have alt text that names the site shown.
+- `[NEEDS …]` placeholders are not shown on the live page; they stay as HTML comments until the content arrives (CR-002 D14).
 - No reviews, testimonials, client counts, or years in business appear.
 - Clicking "Get My Info Doc →" (or "Get Started →") opens the Contact page.
 - No unsupported claims or credentials appear.
@@ -426,6 +436,7 @@ Both appear below the form once provided. Until then, show neither; do not displ
 
 - The info document arrives within 5 minutes (automatic).
 - Personal reply: "Kevin or Kayden will personally reply within 24 hours." Shown under the form.
+- A "What happens next" box beside the form (CR-002 D6): "You send the form." → "Your info document arrives within 5 minutes." → "Kevin or Kayden replies within 24 hours.", with a preview image of the restaurant info document.
 
 ## Service Area or Availability
 

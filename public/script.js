@@ -203,6 +203,10 @@ if (contactForm) {
   showMethodField();
 }
 
+// Animations only hide content once this script is running, so a failed
+// script load never leaves sections invisible.
+document.documentElement.classList.add("motion-ready");
+
 // Storefront street: windows light up once when scrolled into view, and the
 // phone-only sideways scroller can take keyboard focus.
 const street = document.querySelector(".street");
@@ -230,6 +234,33 @@ if (street) {
     setScrollFocus();
     phone.addEventListener("change", setScrollFocus);
   }
+}
+
+// CR-002: reveal on scroll, staggered lists, header shadow.
+document.querySelectorAll("[data-stagger]").forEach((list) => {
+  [...list.children].forEach((child, i) => child.style.setProperty("--i", i));
+});
+
+const revealItems = document.querySelectorAll(".reveal");
+if ("IntersectionObserver" in window) {
+  const reveal = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-in");
+        reveal.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revealItems.forEach((el) => reveal.observe(el));
+} else {
+  revealItems.forEach((el) => el.classList.add("is-in"));
+}
+
+const siteHeader = document.querySelector(".site-header");
+if (siteHeader) {
+  const onScroll = () => siteHeader.classList.toggle("is-scrolled", window.scrollY > 8);
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
 }
 
 // Footer year

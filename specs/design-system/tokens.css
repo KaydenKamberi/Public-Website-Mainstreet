@@ -68,7 +68,15 @@
   --radius-field: 10px;
   --border: 1px solid var(--color-line);
 
+  /* Depth and labels (CR-002) */
+  --text-eyebrow: 13px;
+  --tracking-eyebrow: 0.12em;
+  --shadow-card: 0 1px 2px rgba(31, 58, 46, 0.06), 0 8px 24px rgba(31, 58, 46, 0.08);
+  --shadow-lift: 0 2px 4px rgba(31, 58, 46, 0.08), 0 16px 40px rgba(31, 58, 46, 0.14);
+
   /* Motion */
+  --rise: 16px;
+  --stagger: 60ms;
   --ease: cubic-bezier(.2, .7, .2, 1);
   --duration: 400ms;
   --duration-fast: 150ms;

@@ -96,6 +96,30 @@ Load from Google Fonts: Fraunces (500, 600) and Instrument Sans (400, 500, 600).
 | **Focus ring** | 2px `--focus-light` outline on light backgrounds, 2px `--focus-dark` on night, 3px offset. | Every focusable element |
 | **Footer (details)** | Night. 768px+: three columns (logo + name/tagline; page links; service area, hours, email) + bottom row (copyright, Privacy Policy). Stacked on phones. Links at least 44 × 44px. | Every page |
 
+### Components added by CR-002 (2026-10-08)
+
+| Component | Look | Where |
+| --- | --- | --- |
+| **Eyebrow** | `--text-eyebrow`, 600, uppercase, `--tracking-eyebrow`, marigold-deep (marigold-bright on night). | Above section headings |
+| **Band** | A section on paper (white) with section-gap padding top and bottom, alternating with cream sections. | Every page |
+| **Scene image** | A custom image built in brand colors from our own concept sites (never generic stock), rounded, `--shadow-lift`. | Section visuals |
+| **Collage frame** | Photo in an arched or rounded frame with a marigold or forest block offset behind it, plus Stickers. | About story |
+| **Sticker** | Small paper pill with a marigold check and a short label, `--shadow-lift`, gentle float. | On collages and scenes |
+| **Device frames** | Night-colored laptop and phone frames holding concept-site screenshots; the phone floats gently. | Offerings |
+| **Price display** | Display number at hero size ("$45") with smaller text beside it; tabular figures. | Offerings |
+| **Payment timeline** | 4 month cards + a forest "Minimum total" card. | Offerings |
+| **Tag chip** | Paper pill with a line border, forest 500 text. Not a link or button. | Home "Who it's for" |
+| **Step card with image** | Card with a scene image on top, then the marigold number badge, title, and text; lifts on hover. | Home "How it works" |
+| **Callout** | Night card split into image + text, marigold-bright eyebrow. | Offerings reservations |
+| **FAQ** | `<details>` rows with a forest chevron, 56px tall summaries. | Offerings |
+| **Team card** | Paper card with a 56px marigold Monogram (initials) + name + role. No photos. | About |
+| **Work wall** | Grid of browser-framed site screenshots with a name and a "Concept … · not a real business" (or client) caption; lifts on hover. | About |
+| **What happens next** | Night card with numbered steps and a document preview. | Contact |
+| **Review card** | Quote in Fraunces 500, first name, business name/type, optional site link; section hidden until real reviews exist. | Home, About |
+| **404 page** | Inner page hero + text links home and to Contact. | Missing pages |
+
+**Motion added by CR-002:** sections and cards fade in and rise `--rise` when scrolled into view (600ms, list items `--stagger` apart). Content is hidden for this only after the page script runs (`motion-ready`), so a failed script never hides content. Buttons lift 1px on hover. Cards lift on hover. The header stays at the top on tablet and desktop with a soft shadow after scrolling. Device phones and stickers float gently. All of it is off under `prefers-reduced-motion`.
+
 ## 6. Layout
 
 - Content width 1264px max, not counting the side padding of 24px (phone) to 88px (desktop).
