@@ -252,6 +252,7 @@ function underLimit(map, key, limit, windowMs) {
 setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of visitCounts) if (entry.resetAt < now) visitCounts.delete(key);
+  for (const [key, entry] of loginFailures) if (entry.resetAt < now) loginFailures.delete(key);
 }, 60 * 1000).unref();
 
 function cleanSource(value) {
@@ -328,6 +329,104 @@ app.post(
 
 app.use("/api/leads", (err, req, res, next) => {
   res.status(400).json({ message: MESSAGES.failed, error: "bad request" });
+});
+
+// ---------- Admin (CR-004) ----------
+// One shared team password from the Replit Secret ADMIN_PASSWORD. Without it,
+// the admin stays locked. Sessions are signed cookies that last 12 hours.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || null;
+const SESSION_COOKIE = "ms_admin";
+const SESSION_MS = 12 * 60 * 60 * 1000;
+const LOGIN_LIMIT = 5;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const sessionKey = ADMIN_PASSWORD
+  ? crypto.createHash("sha256").update(`mainstreet-admin-session:${ADMIN_PASSWORD}`).digest()
+  : null;
+const loginFailures = new Map(); // address -> { count, resetAt }, kept in memory only
+const revokedSessions = new Set(); // nonces of logged-out sessions, until they expire
+
+function sign(value) {
+  return crypto.createHmac("sha256", sessionKey).update(value).digest("base64url");
+}
+
+function sameText(a, b) {
+  const hashA = crypto.createHash("sha256").update(String(a)).digest();
+  const hashB = crypto.createHash("sha256").update(String(b)).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
+}
+
+function readCookie(req, name) {
+  const header = req.headers.cookie || "";
+  for (const part of header.split(";")) {
+    const [key, ...rest] = part.trim().split("=");
+    if (key === name) return rest.join("=");
+  }
+  return null;
+}
+
+function sessionFrom(req) {
+  const token = readCookie(req, SESSION_COOKIE);
+  if (!sessionKey || !token) return null;
+  const [expires, nonce, signature] = token.split(".");
+  if (!expires || !nonce || !signature) return null;
+  if (!sameText(signature, sign(`${expires}.${nonce}`))) return null;
+  if (Number(expires) < Date.now() || revokedSessions.has(nonce)) return null;
+  return { expires: Number(expires), nonce };
+}
+
+function setSessionCookie(req, res, value, maxAgeSeconds) {
+  const parts = [`${SESSION_COOKIE}=${value}`, "Path=/", "HttpOnly", "SameSite=Strict", `Max-Age=${maxAgeSeconds}`];
+  if (req.secure) parts.push("Secure");
+  res.setHeader("Set-Cookie", parts.join("; "));
+}
+
+const adminJson = express.json({ limit: "10kb" });
+
+// Every admin API response: never cached, admin must be set up.
+app.use("/api/admin", (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  if (!ADMIN_PASSWORD) return res.status(503).json({ error: "not set up" });
+  // Changes only come from the admin page's own JSON requests.
+  if (req.method !== "GET" && !req.is("application/json")) {
+    return res.status(415).json({ error: "json only" });
+  }
+  next();
+});
+
+function requireAdmin(req, res, next) {
+  if (!sessionFrom(req)) return res.status(401).json({ error: "login required" });
+  next();
+}
+
+app.get("/api/admin/session", (req, res) => {
+  res.json({ loggedIn: Boolean(sessionFrom(req)) });
+});
+
+app.post("/api/admin/login", adminJson, (req, res) => {
+  const entry = loginFailures.get(req.ip);
+  if (entry && entry.resetAt > Date.now() && entry.count >= LOGIN_LIMIT) {
+    return res.status(429).json({ error: "too many tries" });
+  }
+  const password = req.body && typeof req.body.password === "string" ? req.body.password : "";
+  if (!sameText(password, ADMIN_PASSWORD)) {
+    underLimit(loginFailures, req.ip, LOGIN_LIMIT, LOGIN_WINDOW_MS);
+    return res.status(401).json({ error: "wrong password" });
+  }
+  loginFailures.delete(req.ip);
+  const expires = Date.now() + SESSION_MS;
+  const nonce = crypto.randomBytes(16).toString("base64url");
+  setSessionCookie(req, res, `${expires}.${nonce}.${sign(`${expires}.${nonce}`)}`, SESSION_MS / 1000);
+  res.json({ loggedIn: true });
+});
+
+app.post("/api/admin/logout", adminJson, (req, res) => {
+  const session = sessionFrom(req);
+  if (session) {
+    revokedSessions.add(session.nonce);
+    setTimeout(() => revokedSessions.delete(session.nonce), session.expires - Date.now()).unref();
+  }
+  setSessionCookie(req, res, "", 0);
+  res.json({ loggedIn: false });
 });
 
 app.get("/api/health", async (req, res) => {
