@@ -993,3 +993,22 @@ main:has(> .closing-band:last-child) + .site-footer {
     padding: var(--space-7);
   }
 }
+
+
+/* About */
+.about-pair {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.about-pair .placeholder {
+  min-height: 200px;
+}
+
+@media (min-width: 1024px) {
+  .about-pair {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
+    align-items: start;
+  }
+}
