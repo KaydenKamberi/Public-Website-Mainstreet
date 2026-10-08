@@ -185,24 +185,29 @@
     </section>
 
     <section class="closing-band" data-closing-band>
-      <div class="container">
+      <div class="closing-awning" aria-hidden="true"></div>
+      <div class="container closing-grid">
+        <div>
         <h2>Want a website for your business?</h2>
         <p>Tell us what kind of business you have, and we'll send you an info document made for it within 5 minutes.</p>
-        <a class="button button-closing" href="/contact.html">Get My Info Doc →</a>
+        </div>
+        <a class="button button-closing" href="/contact.html">Get My Info Doc <span class="btn-arrow" aria-hidden="true">→</span></a>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <p class="footer-brand">Mainstreet Sites SD — Websites for local business</p>
-      <ul class="footer-facts">
-        <li>Serving all of San Diego</li>
-        <li>Weekends, and weekdays 6:00 pm to 8:00 pm</li>
-        <li><a href="mailto:mainstreetsitessd@gmail.com">mainstreetsitessd@gmail.com</a></li>
-        <!-- [NEEDS CONTENT: business phone number] Add an sms: link here once it exists. -->
-      </ul>
-      <nav aria-label="Footer">
+      <div class="footer-brand-col">
+        <p class="footer-brand">Mainstreet Sites SD<span> — Websites for local business</span></p>
+        <ul class="footer-facts">
+          <li>Serving all of San Diego</li>
+          <li>Weekends, and weekdays 6:00 pm to 8:00 pm</li>
+          <li><a href="mailto:mainstreetsitessd@gmail.com">mainstreetsitessd@gmail.com</a></li>
+          <!-- [NEEDS CONTENT: business phone number] Add an sms: link here once it exists. -->
+        </ul>
+      </div>
+      <nav class="footer-nav" aria-label="Footer">
         <ul class="footer-links">
           <li><a href="/" aria-current="page">Home</a></li>
           <li><a href="/offerings.html">Offerings</a></li>
@@ -211,6 +216,23 @@
           <li><a href="/privacy.html">Privacy Policy</a></li>
         </ul>
       </nav>
+      <div class="footer-extra">
+        <div class="footer-pay">
+          <p class="footer-label">We accept</p>
+          <ul class="pay-badges">
+            <li><span class="pay-icon pay-icon-venmo" aria-hidden="true">V</span>Venmo</li>
+            <li><span class="pay-icon pay-icon-cash" aria-hidden="true">$</span>Cash</li>
+          </ul>
+        </div>
+        <!-- [NEEDS CONTENT: Instagram and Facebook handles] Remove "hidden" and fill in the links once the accounts exist (spec §3). -->
+        <div class="footer-social" hidden>
+          <p class="footer-label">Follow us</p>
+          <ul class="social-links">
+            <li><a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/></svg></a></li>
+            <li><a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M14 8h3V4h-3c-2.8 0-4 1.8-4 4.3V10H7v4h3v7h4v-7h3l1-4h-4V8.6c0-.4.3-.6.6-.6Z" fill="currentColor"/></svg></a></li>
+          </ul>
+        </div>
+      </div>
       <p class="footer-copy">© <span data-year>2026</span> Mainstreet Sites SD</p>
     </div>
   </footer>
