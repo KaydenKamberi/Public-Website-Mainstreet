@@ -129,6 +129,18 @@ Load from Google Fonts: Fraunces (500, 600) and Instrument Sans (400, 500, 600).
 | **Payment badge** | Night-2 pill with a small circle icon ("V" on marigold-bright, "$" on glow) and the method name. Text only, no third-party logos. | Footer |
 | **Social button** | 44px circle with a line icon; marigold-bright fill on hover. Hidden until the accounts exist. | Footer |
 
+### Components added by CR-004 (2026-10-08): admin area only
+
+| Component | Look | Where |
+| --- | --- | --- |
+| **Admin bar** | Night bar with the logo, a marigold-bright "Admin" tag, and a Log out button. | Admin |
+| **Tabs** | Text tabs with a 3px marigold underline on the active one. | Admin |
+| **Filter chip** | 44px pill; the active one is forest with white text. | Admin |
+| **Lead card** | Paper card with a 4px marigold left edge (forest once responded), name + business type + time, status badge, facts list, the message on cream, then status/note/save/delete. | Admin |
+| **Badge** | Small pill: New (glow + marigold-deep), Done (success-soft + forest), Waiting (cream + body), Problem (danger-soft + danger). | Admin |
+| **Stat tile** | Paper tile with a label and a display number. | Admin |
+| **Stats table** | Paper table, tabular numbers, right-aligned numbers. | Admin |
+
 ## 6. Layout
 
 - Content width 1264px max, not counting the side padding of 24px (phone) to 88px (desktop).
