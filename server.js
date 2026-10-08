@@ -226,6 +226,64 @@ async function retryUnforwarded() {
 
 const app = express();
 
+// Replit serves the app behind one proxy; this makes req.ip the visitor's
+// address (used only in memory for rate limits) and req.secure accurate.
+app.set("trust proxy", 1);
+
+// ---------- Visits (CR-004) ----------
+// One visit per browser session: source + page only. No IP, name, or device
+// info is stored. Bots that identify themselves are skipped.
+const VISIT_PAGES = new Set(["home", "offerings", "about", "contact", "privacy"]);
+const BOT_PATTERN = /bot|crawl|spider|slurp|preview|headless|lighthouse/i;
+const VISITS_PER_MINUTE = 30;
+const visitCounts = new Map(); // address -> { count, resetAt }, kept in memory only
+
+function underLimit(map, key, limit, windowMs) {
+  const now = Date.now();
+  const entry = map.get(key);
+  if (!entry || entry.resetAt < now) {
+    map.set(key, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+  entry.count += 1;
+  return entry.count <= limit;
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of visitCounts) if (entry.resetAt < now) visitCounts.delete(key);
+}, 60 * 1000).unref();
+
+function cleanSource(value) {
+  const source = String(value || "").trim().toLowerCase();
+  return /^[a-z0-9_-]{1,40}$/.test(source) ? source : "direct";
+}
+
+app.post(
+  "/api/visits",
+  express.text({ type: ["text/plain", "application/json"], limit: "1kb" }),
+  (req, res) => {
+    res.status(204).end();
+    if (!pool || BOT_PATTERN.test(req.get("user-agent") || "")) return;
+    if (!underLimit(visitCounts, req.ip, VISITS_PER_MINUTE, 60 * 1000)) return;
+
+    let body;
+    try {
+      body = JSON.parse(typeof req.body === "string" ? req.body : "");
+    } catch (err) {
+      return;
+    }
+    if (!body || !VISIT_PAGES.has(body.page)) return;
+
+    pool.query("INSERT INTO visits (source, page) VALUES ($1, $2)", [cleanSource(body.source), body.page])
+      .catch((err) => console.error("Saving visit failed:", err.message));
+  }
+);
+
+app.use("/api/visits", (err, req, res, next) => {
+  res.status(204).end();
+});
+
 app.post(
   "/api/leads",
   express.json({ limit: "10kb" }),
