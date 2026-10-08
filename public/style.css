@@ -938,3 +938,58 @@ main:has(> .closing-band:last-child) + .site-footer {
     grid-template-columns: repeat(4, 1fr);
   }
 }
+
+
+/* Offerings */
+.package-card > h2 {
+  margin-bottom: var(--space-3);
+}
+
+.price-terms {
+  display: grid;
+  gap: var(--space-5);
+  margin: var(--space-6) 0;
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--color-line-soft);
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.price-block ul {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.price-block li + li {
+  margin-top: var(--space-2);
+}
+
+.reservations {
+  margin-bottom: var(--space-6);
+}
+
+.package-image {
+  min-height: 200px;
+  margin-bottom: var(--space-5);
+}
+
+@media (min-width: 768px) {
+  .price-terms {
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .price-block + .price-block {
+    padding-left: var(--space-6);
+    border-left: 1px solid var(--color-line-soft);
+  }
+
+  .price-block:first-child {
+    padding-right: var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .package-card {
+    padding: var(--space-7);
+  }
+}
