@@ -177,7 +177,7 @@ No social media icons or links appear on the site until accounts exist.
 
 - Every page sets a unique `<title>` that includes "Mainstreet Sites SD".
 - Favicons from the logo set are used on every page.
-- Every page records a visit with its `utm_source` (see section 9).
+- Each browser session records one visit with its `utm_source` and the first page seen (see section 9; CR-004 D1). No IP address, name, or device info is stored.
 - The email address, once provided, uses a `mailto:` link. The phone number, once provided, uses an `sms:` link for texting.
 - Pages remain usable at 375 pixels wide with no horizontal scrolling.
 - Section labels (eyebrows) sit above section headings, e.g. "Pricing", "How it works", "The team", "What's included", "Our work" (CR-002 D3).
@@ -516,9 +516,10 @@ This wording is a starting point, not legal advice. The student may want a paren
 ## Student-Specific Requirements
 
 - The admin page lists leads newest first.
-- Each lead shows name, email, phone, business type, message, consent, source, submission date and time, status, response note, and info document status (sent by email, sent by text, or not sent, with the time).
-- The admin can resend the info document from a lead.
-- Status options: `new` and `responded`.
+- Each lead shows name, email, phone, business type, message, consent, source, submission date and time, status, response note, and whether it reached the team hub (yes / not yet / refused, with the time). Info document status lives in the team hub, which sends the documents (CR-004 D2).
+- Resending an info document happens in the team hub (CR-004 D2). The admin can delete this site's copy of a lead, with a confirm step, when someone asks for their information to be deleted (CR-004 D6).
+- Status options: `new` and `responded`. Filters: All, New, Responded, Not in the hub yet.
+- Login: one shared team password from the Replit Secret `ADMIN_PASSWORD`; a signed 12-hour session cookie; logins pause for 15 minutes after 5 wrong tries; the admin stays locked if the secret is not set (CR-004 D3).
 - Marking a lead `responded` records the responded date and time.
 - Leads are real customer contacts. Store only what the form collects, and never show lead data outside the protected admin area.
 - Day-to-day lead management happens in the private team hub. This site's admin area is a backup view that also shows whether each submission reached the hub (`forwarded`: yes or no).
@@ -539,7 +540,7 @@ This wording is a starting point, not legal advice. The student may want a paren
 
 - `direct` (no source provided)
 
-No campaign sources have been selected yet. `[NEEDS DECISION: which marketing campaign sources to track with utm_source]`
+No campaign sources have been selected yet. `[NEEDS DECISION: which marketing campaign sources to track with utm_source]` The admin's tracking link maker builds links like `…/?utm_source=flyer` from any source name (lowercase letters, numbers, `-`, `_`; CR-004 D5).
 
 Do not invent campaign sources the student has not selected.
 
@@ -558,7 +559,7 @@ Show by source:
 - Direct traffic is represented appropriately.
 - Dashboard calculations are correct.
 - Visiting any page with `?utm_source=test` records a visit with source `test`, and later pages in the same browser keep `test` as the source.
-- Conversion rate equals leads ÷ visits × 100, and shows 0% (not an error) when a source has visits but no leads.
+- Conversion rate equals leads ÷ visits × 100, and shows 0% (not an error) when a source has visits but no leads, and "—" when it has leads but no visits. The dashboard shows Last 30 days (default) and All time (CR-004 D4).
 
 # 10. Images and Assets
 

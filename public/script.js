@@ -32,6 +32,26 @@ function getSource() {
 
 const visitorSource = getSource();
 
+// Visit tracking (CR-004): one visit per browser session, with only the
+// source and the page. Nothing personal is sent.
+(function recordVisit() {
+  const match = location.pathname.match(/^\/(index|offerings|about|contact|privacy)?(?:\.html)?$/);
+  if (!match) return;
+  const page = !match[1] || match[1] === "index" ? "home" : match[1];
+  try {
+    if (sessionStorage.getItem("mainstreet_visit")) return;
+    sessionStorage.setItem("mainstreet_visit", "1");
+  } catch (err) {
+    // Storage blocked: still count this page.
+  }
+  const body = JSON.stringify({ source: visitorSource, page });
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon("/api/visits", body);
+  } else {
+    fetch("/api/visits", { method: "POST", body, keepalive: true }).catch(() => {});
+  }
+})();
+
 // Phone menu
 const menuToggle = document.querySelector(".menu-toggle");
 const siteNav = document.getElementById("site-nav");

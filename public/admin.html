@@ -8,20 +8,100 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-192.png">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Instrument+Sans:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="/style.css">
   <script src="/admin.js" defer></script>
 </head>
-<body>
-  <header class="site-header">
-    <!-- Temporary logo: swap for brand/logo.svg once the SVG files are available. -->
-    <a class="logo" href="/">
-      <img src="/images/favicon-192.png" alt="" width="32" height="32">
-      <span>Mainstreet Sites SD</span>
-    </a>
+<body class="admin">
+  <header class="admin-header">
+    <div class="admin-bar">
+      <a class="logo" href="/">
+        <img src="/images/favicon-192.png" alt="" width="32" height="32">
+        <span>Mainstreet Sites SD</span>
+      </a>
+      <span class="admin-tag">Admin</span>
+      <button class="admin-logout" type="button" data-logout hidden>Log out</button>
+    </div>
   </header>
 
-  <main>
-    <h1>Admin</h1>
+  <main id="main" class="admin-main">
+    <p class="admin-status" data-status role="status">Loading…</p>
+
+    <!-- Shown when ADMIN_PASSWORD is not set in Replit Secrets -->
+    <section class="admin-panel" data-view="setup" hidden>
+      <h1>Admin is not set up yet</h1>
+      <p>Add an <code>ADMIN_PASSWORD</code> secret in Replit, then restart the app.</p>
+    </section>
+
+    <section class="admin-panel admin-login" data-view="login" hidden>
+      <h1>Team login</h1>
+      <form data-login-form>
+        <div class="field">
+          <label for="admin-password">Password</label>
+          <input id="admin-password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <p class="field-error" data-login-error hidden></p>
+        <button class="button button-primary" type="submit">Log in</button>
+      </form>
+    </section>
+
+    <section data-view="app" hidden>
+      <nav class="admin-tabs" aria-label="Admin sections">
+        <button type="button" class="admin-tab" data-tab="leads" aria-pressed="true">Leads</button>
+        <button type="button" class="admin-tab" data-tab="marketing" aria-pressed="false">Marketing</button>
+      </nav>
+
+      <div data-panel="leads">
+        <div class="admin-toolbar">
+          <h1>Leads</h1>
+          <div class="admin-filters" role="group" aria-label="Filter leads">
+            <button type="button" class="admin-chip" data-filter="all" aria-pressed="true">All</button>
+            <button type="button" class="admin-chip" data-filter="new" aria-pressed="false">New</button>
+            <button type="button" class="admin-chip" data-filter="responded" aria-pressed="false">Responded</button>
+            <button type="button" class="admin-chip" data-filter="unforwarded" aria-pressed="false">Not in the hub yet</button>
+          </div>
+        </div>
+        <p class="small">A backup view of contact form submissions. Info documents are sent and tracked in the team hub.</p>
+        <ul class="lead-list" data-lead-list></ul>
+      </div>
+
+      <div data-panel="marketing" hidden>
+        <div class="admin-toolbar">
+          <h1>Marketing</h1>
+          <div class="admin-filters" role="group" aria-label="Time range">
+            <button type="button" class="admin-chip" data-range="30d" aria-pressed="true">Last 30 days</button>
+            <button type="button" class="admin-chip" data-range="all" aria-pressed="false">All time</button>
+          </div>
+        </div>
+        <div class="stat-tiles" data-totals></div>
+        <div class="table-wrap">
+          <table class="stats-table">
+            <caption class="small">Visits, leads, and conversion rate (leads ÷ visits × 100) by source. One visit per browser session.</caption>
+            <thead><tr><th scope="col">Source</th><th scope="col">Visits</th><th scope="col">Leads</th><th scope="col">Conversion</th></tr></thead>
+            <tbody data-stats></tbody>
+          </table>
+        </div>
+
+        <section class="admin-panel link-maker">
+          <h2>Tracking link maker</h2>
+          <p class="small">Name where the link will go (for example <code>flyer</code>, <code>instagram</code>, <code>card</code>). Lowercase letters, numbers, - and _ only.</p>
+          <form data-link-form>
+            <div class="field">
+              <label for="link-source">Source name</label>
+              <input id="link-source" type="text" maxlength="40" autocomplete="off" required>
+            </div>
+            <p class="field-error" data-link-error hidden></p>
+            <button class="button button-secondary" type="submit">Make link</button>
+          </form>
+          <div class="link-result" data-link-result hidden>
+            <code data-link-text></code>
+            <button class="button button-primary" type="button" data-link-copy>Copy</button>
+          </div>
+        </section>
+      </div>
+    </section>
   </main>
 </body>
 </html>

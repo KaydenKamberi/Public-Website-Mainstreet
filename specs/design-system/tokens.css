@@ -68,6 +68,12 @@
   --radius-field: 10px;
   --border: 1px solid var(--color-line);
 
+  /* Status colors for the admin area (CR-004) */
+  --color-success-soft: #E3EDE7;  /* "done" badge background, forest text on it */
+  --color-danger: #7D2F1C;        /* delete / refused text (8.6:1 on paper) */
+  --color-danger-soft: #F6E1DA;   /* danger badge / hover background */
+  --color-danger-line: #C9A39A;   /* delete button border */
+
   /* Depth and labels (CR-002) */
   --text-eyebrow: 13px;
   --tracking-eyebrow: 0.12em;

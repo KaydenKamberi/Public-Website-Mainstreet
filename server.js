@@ -226,6 +226,65 @@ async function retryUnforwarded() {
 
 const app = express();
 
+// Replit serves the app behind one proxy; this makes req.ip the visitor's
+// address (used only in memory for rate limits) and req.secure accurate.
+app.set("trust proxy", 1);
+
+// ---------- Visits (CR-004) ----------
+// One visit per browser session: source + page only. No IP, name, or device
+// info is stored. Bots that identify themselves are skipped.
+const VISIT_PAGES = new Set(["home", "offerings", "about", "contact", "privacy"]);
+const BOT_PATTERN = /bot|crawl|spider|slurp|preview|headless|lighthouse/i;
+const VISITS_PER_MINUTE = 30;
+const visitCounts = new Map(); // address -> { count, resetAt }, kept in memory only
+
+function underLimit(map, key, limit, windowMs) {
+  const now = Date.now();
+  const entry = map.get(key);
+  if (!entry || entry.resetAt < now) {
+    map.set(key, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+  entry.count += 1;
+  return entry.count <= limit;
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of visitCounts) if (entry.resetAt < now) visitCounts.delete(key);
+  for (const [key, entry] of loginFailures) if (entry.resetAt < now) loginFailures.delete(key);
+}, 60 * 1000).unref();
+
+function cleanSource(value) {
+  const source = String(value || "").trim().toLowerCase();
+  return /^[a-z0-9_-]{1,40}$/.test(source) ? source : "direct";
+}
+
+app.post(
+  "/api/visits",
+  express.text({ type: ["text/plain", "application/json"], limit: "1kb" }),
+  (req, res) => {
+    res.status(204).end();
+    if (!pool || BOT_PATTERN.test(req.get("user-agent") || "")) return;
+    if (!underLimit(visitCounts, req.ip, VISITS_PER_MINUTE, 60 * 1000)) return;
+
+    let body;
+    try {
+      body = JSON.parse(typeof req.body === "string" ? req.body : "");
+    } catch (err) {
+      return;
+    }
+    if (!body || !VISIT_PAGES.has(body.page)) return;
+
+    pool.query("INSERT INTO visits (source, page) VALUES ($1, $2)", [cleanSource(body.source), body.page])
+      .catch((err) => console.error("Saving visit failed:", err.message));
+  }
+);
+
+app.use("/api/visits", (err, req, res, next) => {
+  res.status(204).end();
+});
+
 app.post(
   "/api/leads",
   express.json({ limit: "10kb" }),
@@ -270,6 +329,205 @@ app.post(
 
 app.use("/api/leads", (err, req, res, next) => {
   res.status(400).json({ message: MESSAGES.failed, error: "bad request" });
+});
+
+// ---------- Admin (CR-004) ----------
+// One shared team password from the Replit Secret ADMIN_PASSWORD. Without it,
+// the admin stays locked. Sessions are signed cookies that last 12 hours.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || null;
+const SESSION_COOKIE = "ms_admin";
+const SESSION_MS = 12 * 60 * 60 * 1000;
+const LOGIN_LIMIT = 5;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const sessionKey = ADMIN_PASSWORD
+  ? crypto.createHash("sha256").update(`mainstreet-admin-session:${ADMIN_PASSWORD}`).digest()
+  : null;
+const loginFailures = new Map(); // address -> { count, resetAt }, kept in memory only
+const revokedSessions = new Set(); // nonces of logged-out sessions, until they expire
+
+function sign(value) {
+  return crypto.createHmac("sha256", sessionKey).update(value).digest("base64url");
+}
+
+function sameText(a, b) {
+  const hashA = crypto.createHash("sha256").update(String(a)).digest();
+  const hashB = crypto.createHash("sha256").update(String(b)).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
+}
+
+function readCookie(req, name) {
+  const header = req.headers.cookie || "";
+  for (const part of header.split(";")) {
+    const [key, ...rest] = part.trim().split("=");
+    if (key === name) return rest.join("=");
+  }
+  return null;
+}
+
+function sessionFrom(req) {
+  const token = readCookie(req, SESSION_COOKIE);
+  if (!sessionKey || !token) return null;
+  const [expires, nonce, signature] = token.split(".");
+  if (!expires || !nonce || !signature) return null;
+  if (!sameText(signature, sign(`${expires}.${nonce}`))) return null;
+  if (Number(expires) < Date.now() || revokedSessions.has(nonce)) return null;
+  return { expires: Number(expires), nonce };
+}
+
+function setSessionCookie(req, res, value, maxAgeSeconds) {
+  const parts = [`${SESSION_COOKIE}=${value}`, "Path=/", "HttpOnly", "SameSite=Strict", `Max-Age=${maxAgeSeconds}`];
+  if (req.secure) parts.push("Secure");
+  res.setHeader("Set-Cookie", parts.join("; "));
+}
+
+const adminJson = express.json({ limit: "10kb" });
+
+// Every admin API response: never cached, admin must be set up.
+app.use("/api/admin", (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  if (!ADMIN_PASSWORD) return res.status(503).json({ error: "not set up" });
+  // Changes only come from the admin page's own JSON requests.
+  if (req.method !== "GET" && !req.is("application/json")) {
+    return res.status(415).json({ error: "json only" });
+  }
+  next();
+});
+
+function requireAdmin(req, res, next) {
+  if (!sessionFrom(req)) return res.status(401).json({ error: "login required" });
+  next();
+}
+
+app.get("/api/admin/session", (req, res) => {
+  res.json({ loggedIn: Boolean(sessionFrom(req)) });
+});
+
+app.post("/api/admin/login", adminJson, (req, res) => {
+  const entry = loginFailures.get(req.ip);
+  if (entry && entry.resetAt > Date.now() && entry.count >= LOGIN_LIMIT) {
+    return res.status(429).json({ error: "too many tries" });
+  }
+  const password = req.body && typeof req.body.password === "string" ? req.body.password : "";
+  if (!sameText(password, ADMIN_PASSWORD)) {
+    underLimit(loginFailures, req.ip, LOGIN_LIMIT, LOGIN_WINDOW_MS);
+    return res.status(401).json({ error: "wrong password" });
+  }
+  loginFailures.delete(req.ip);
+  const expires = Date.now() + SESSION_MS;
+  const nonce = crypto.randomBytes(16).toString("base64url");
+  setSessionCookie(req, res, `${expires}.${nonce}.${sign(`${expires}.${nonce}`)}`, SESSION_MS / 1000);
+  res.json({ loggedIn: true });
+});
+
+app.post("/api/admin/logout", adminJson, (req, res) => {
+  const session = sessionFrom(req);
+  if (session) {
+    revokedSessions.add(session.nonce);
+    setTimeout(() => revokedSessions.delete(session.nonce), session.expires - Date.now()).unref();
+  }
+  setSessionCookie(req, res, "", 0);
+  res.json({ loggedIn: false });
+});
+
+const LEAD_COLUMNS = `id, name, business_type, contact_method, email, phone, message, consent, source,
+  status, response_note, created_at, responded_at, forwarded, forwarded_at, forward_rejected, forward_attempts`;
+const LEAD_FILTERS = {
+  all: "TRUE",
+  new: "status = 'new'",
+  responded: "status = 'responded'",
+  unforwarded: "forwarded = false",
+};
+
+function leadId(req) {
+  const id = Number(req.params.id);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+app.get("/api/admin/leads", requireAdmin, async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "database not configured" });
+  const where = LEAD_FILTERS[req.query.filter] || LEAD_FILTERS.all;
+  try {
+    const { rows } = await pool.query(
+      `SELECT ${LEAD_COLUMNS} FROM leads WHERE ${where} ORDER BY created_at DESC LIMIT 500`
+    );
+    res.json({ leads: rows });
+  } catch (err) {
+    console.error("Loading leads failed:", err.message);
+    res.status(500).json({ error: "load failed" });
+  }
+});
+
+app.patch("/api/admin/leads/:id", requireAdmin, adminJson, async (req, res) => {
+  const id = leadId(req);
+  const body = req.body || {};
+  if (!id || !pool) return res.status(400).json({ error: "bad request" });
+  const status = body.status === undefined ? null : body.status;
+  if (status !== null && status !== "new" && status !== "responded") {
+    return res.status(400).json({ error: "bad status" });
+  }
+  const note = body.responseNote === undefined ? null : text(body.responseNote, 2000);
+  try {
+    const { rows } = await pool.query(
+      `UPDATE leads
+          SET status = COALESCE($2, status),
+              responded_at = CASE
+                WHEN $2 = 'responded' AND status <> 'responded' THEN now()
+                WHEN $2 = 'new' THEN NULL
+                ELSE responded_at END,
+              response_note = CASE WHEN $3::boolean THEN $4 ELSE response_note END
+        WHERE id = $1
+        RETURNING ${LEAD_COLUMNS}`,
+      [id, status, body.responseNote !== undefined, note]
+    );
+    if (!rows.length) return res.status(404).json({ error: "not found" });
+    res.json({ lead: rows[0] });
+  } catch (err) {
+    console.error("Updating lead failed:", err.message);
+    res.status(500).json({ error: "update failed" });
+  }
+});
+
+app.delete("/api/admin/leads/:id", requireAdmin, async (req, res) => {
+  const id = leadId(req);
+  if (!id || !pool) return res.status(400).json({ error: "bad request" });
+  try {
+    const { rowCount } = await pool.query("DELETE FROM leads WHERE id = $1", [id]);
+    if (!rowCount) return res.status(404).json({ error: "not found" });
+    res.json({ deleted: true });
+  } catch (err) {
+    console.error("Deleting lead failed:", err.message);
+    res.status(500).json({ error: "delete failed" });
+  }
+});
+
+// Marketing dashboard: visits, leads, and conversion rate by source.
+app.get("/api/admin/stats", requireAdmin, async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "database not configured" });
+  const allTime = req.query.range === "all";
+  try {
+    const { rows } = await pool.query(
+      `WITH v AS (
+         SELECT source, count(*)::int AS visits FROM visits
+          WHERE $1::boolean OR created_at > now() - interval '30 days' GROUP BY source),
+       l AS (
+         SELECT source, count(*)::int AS leads FROM leads
+          WHERE $1::boolean OR created_at > now() - interval '30 days' GROUP BY source)
+       SELECT COALESCE(v.source, l.source) AS source,
+              COALESCE(v.visits, 0) AS visits,
+              COALESCE(l.leads, 0) AS leads
+         FROM v FULL OUTER JOIN l ON v.source = l.source
+        ORDER BY visits DESC, leads DESC, source`,
+      [allTime]
+    );
+    const rate = (leads, visits) => (visits > 0 ? Math.round((leads / visits) * 1000) / 10 : null);
+    const sources = rows.map((row) => ({ ...row, conversion: rate(row.leads, row.visits) }));
+    const visits = sources.reduce((sum, row) => sum + row.visits, 0);
+    const leads = sources.reduce((sum, row) => sum + row.leads, 0);
+    res.json({ range: allTime ? "all" : "30d", sources, total: { visits, leads, conversion: rate(leads, visits) } });
+  } catch (err) {
+    console.error("Loading stats failed:", err.message);
+    res.status(500).json({ error: "load failed" });
+  }
 });
 
 app.get("/api/health", async (req, res) => {
