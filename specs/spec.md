@@ -2,7 +2,7 @@
 
 ## Specification Status
 
-`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy).
+`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions.
 
 This document defines the requirements for this student's business website.
 
@@ -21,6 +21,7 @@ Business facts must come from the approved `business-brief.md` or later student 
 - **Texting comes later (decided).** Automatic texts will use Twilio, added once the business has paying clients. Twilio charges per message and requires U.S. carrier registration before texts deliver. At launch, info documents are sent by email from the business Gmail.
 - **Operations items in the brief** (50/50 money split, team roles, AI-automated website management) describe how the business runs. They are not website features and must not be built into this site.
 - **Connection to the team hub (decided).** Every contact form submission is sent securely to the private team hub, where the team (Kevin, Kayden, and Cheyenne) manages it. The hub, not this site, sends the info document. Details are in the hub's `CR-001` Phase D.
+- **Reservations are for client sites only (decided 2026-10-08).** This site describes the optional reservations service but has no booking system or reservation form. Mainstreet Sites SD never builds its own booking system or stores booking information.
 
 # 1. Business Overview
 
@@ -61,7 +62,7 @@ Professional. Visitors should see a professional-level service.
 
 ## Design System
 
-**Day to Dusk**, locked by Kevin on 2026-09-27 (source design: artboard `R3-3 Day to Dusk`). The full rules live in `design-system/DESIGN-SYSTEM.md` and every value in `design-system/tokens.css`. **Those two files are the source of truth for all colors, fonts, sizes, spacing, and components.** Nothing in this spec overrides them.
+**Day to Dusk**, locked by Kevin on 2026-09-27 (source design: artboard `R3-3 Day to Dusk`). The full rules live in `design-system/DESIGN-SYSTEM.md` and every value in `design-system/tokens.css`. **Those two files are the source of truth for all colors, fonts, sizes, spacing, and components.** Nothing in this spec overrides them. A screenshot of the R3-3 Home artboard is in `design-system/r3-3-day-to-dusk-home.webp`. It is the layout reference only; its wording is out of date (for example, it shows $40 a month). All wording comes from this spec.
 
 Summary:
 
@@ -70,13 +71,13 @@ Summary:
 - **Type:** Fraunces for headings, Instrument Sans for text.
 - **Signature pieces:** striped awnings, the day-to-dusk band, storefront cards with glowing windows, fact lines on the dusk band, night footer.
 - **Rules for builders:** use tokens only; build every section from the components in `DESIGN-SYSTEM.md`; if something new is needed, add it to the design system first.
-- **Structure reference:** the student likes the clean structure of `design-reference.png` (a professional studio site). Use its level of craft only, never its text, colors, fonts, or layout.
+- **Structure reference:** the student likes the clean structure of `design-reference.webp` (a professional studio site). Use its level of craft only, never its text, colors, fonts, or layout.
 
 The student must personally compare Phase 3 against the locked design (R3-3) and approve it.
 
 ## Logo
 
-Available. Files:
+Favicons are in `brand/`. `[NEEDS ASSET: logo.svg, logo-on-dark.svg, logo-mono.svg, mark.svg]`: not in the repo yet. Until then, the header and footer use a temporary stand-in (CR-001 D5). Planned files:
 
 - Full-color logo
 - One-color (mono) logo
@@ -84,18 +85,19 @@ Available. Files:
 - Icon mark (storefront)
 - Favicons
 
-Files are in `brand/` (recolored to forest green and marigold on 2026-09-27): `logo.svg` (light backgrounds), `logo-on-dark.svg` (dusk band and footer), `logo-mono.svg`, `mark.svg`, and favicons. Place in `/public/images/`. Do not redraw, recolor, stretch, or retype the logo.
+When added, the files go in `brand/` (recolored to forest green and marigold on 2026-09-27): `logo.svg` (light backgrounds), `logo-on-dark.svg` (dusk band and footer), `logo-mono.svg`, `mark.svg`, and favicons. Place in `/public/images/`. Do not redraw, recolor, stretch, or retype the logo.
 
 ## Image Direction
 
 Available:
 
-- Screenshots of tradesitessd.com
-- Screenshots of Kevin's dad's contracting website
+- None yet beyond the logo favicons.
 
 Needed:
 
+- `[NEEDS ASSET: screenshots of tradesitessd.com and Kevin's dad's site]` (CR-001 D8)
 - `[NEEDS ASSET: example restaurant websites (demo sites)]`
+- `[NEEDS ASSET: example barbershop website (demo site)]` and `[NEEDS ASSET: example bakery website (demo site)]` (CR-001 D4)
 - `[NEEDS ASSET: team photo, if included]`
 
 Rules:
@@ -122,7 +124,7 @@ Rules:
 - About
 - Contact
 
-The logo in the header links to Home. On phones, navigation collapses into a menu button with a real `<button>` element and an accessible label.
+The logo in the header links to Home. Under 1024 px, navigation collapses into a menu button with a real `<button>` element and an accessible label.
 
 ## Footer
 
@@ -147,15 +149,15 @@ Buttons appear **only** in these spots. No other buttons anywhere.
 
 | Where | What |
 | --- | --- |
-| Header, right side (every page except Contact) | Primary button "Get My Info Doc →" |
-| Home hero, under the lead text | Primary "Get My Info Doc →" + secondary "See What's Included" side by side. Under them, one small line: "$60 the first month, then $40 a month." followed by a text link "See full pricing" (to Offerings). |
+| Header, right side (every page except Contact; hidden on phones under 768 px, where the sticky bar replaces it) | Primary button "Get My Info Doc →" |
+| Home hero, under the lead text | Primary "Get My Info Doc →" + secondary "See What's Included" side by side (stacked at equal full width on phones under 768 px). Under them, one small line: "$60 the first month, then $45 a month." followed by a text link "See full pricing" (to Offerings). |
 | Offerings, bottom of the package card | Primary "Get Started →" (to Contact) |
 | Bottom of Home, Offerings, and About | The same closing band: a short heading, one sentence, and one primary "Get My Info Doc →" button |
 | Contact page | Form submit button "Send Message". Under the form: text links "Email us" and "Text us" once the real email and phone exist. |
 | Phones only (under 768 px) | A sticky bottom bar with one "Get My Info Doc →" button. It appears only after the visitor scrolls past the hero and never appears on the Contact page. |
 
 Rules:
-- No more than 2 buttons visible on the screen at once (the sticky bar counts).
+- No more than 2 buttons visible on the screen at once (the sticky bar counts; the header button does not).
 - No buttons in the middle of content sections. Sections in between use text links only, if anything.
 - On the Contact page, the header button is hidden.
 
@@ -194,22 +196,22 @@ Lead text under the heading: "**Mainstreet Sites SD builds and manages websites 
 
 ## Required Content (in this order)
 
-1. **Header:** logo, "San Diego" in small muted text beside it, navigation, header button.
+1. **Header:** logo, navigation, header button.
 2. **Hero (Day to Dusk):** heading on the left with the gold rule under it; lead text, button pair, and price line on the right.
 3. **Dusk band with the storefront street:** the day-to-dusk gradient, three storefront cards (example sites in glowing windows, captioned "Example:") and the three fact lines, in marigold-bright labels. Facts only:
    - "**Demo first.** See your site before you decide."
    - "**You own it.** Your website stays yours."
    - "**Updates included.** Managed every month."
-4. **Who it's for:** one line, "Built for San Diego's *local businesses*." followed by the business types from the contact form's dropdown, as plain text: restaurants, HVAC, barbershops, car detailing, gyms and martial arts studios, lash studios, house cleaning, bakeries, and tattoo shops.
+4. **Who it's for:** one line, "Built for San Diego's local businesses." ("local businesses" is the highlight phrase, in marigold-text, not italic) followed by the business types from the contact form's dropdown, as plain text: restaurants, HVAC, barbershops, car detailing, gyms and martial arts studios, lash studios, house cleaning, bakeries, and tattoo shops.
 5. **Why a website matters:** many people search online before visiting a business; without a site, they may lose interest or not make the trip.
-6. **What's included:** the website (for restaurants: menu, prices, deals and combos, location, reviews) and the monthly management, with a "See what's included" text link to Offerings.
+6. **What's included:** the website (for restaurants: menu, prices, deals and combos, location, reviews, and an optional reservations service at no extra cost from us) and the monthly management, with a "See what's included" text link to Offerings.
 7. **How it works:** 4 numbered steps: we build a demo, we show it to you, you decide, we launch and keep it updated.
 8. **Closing band** with the primary button.
 9. **Footer.**
 
 ## Visual Content
 
-- Logo (available)
+- Logo: `[NEEDS ASSET: logo.svg, logo-on-dark.svg, logo-mono.svg, mark.svg]` (temporary stand-in until provided)
 - Example restaurant website visual: `[NEEDS ASSET: example restaurant websites (demo sites)]`. Use an obvious temporary placeholder until provided.
 
 ## Primary CTA
@@ -228,13 +230,13 @@ Lead text under the heading: "**Mainstreet Sites SD builds and manages websites 
 - The business name "Mainstreet Sites SD" is visible in the header without scrolling on a 375-pixel-wide screen.
 - The primary heading reads "Websites for local businesses in San Diego." with "local businesses" in the marigold-text color.
 - The lead text starts with "Mainstreet Sites SD builds and manages websites for local businesses" in bold and mentions family-owned restaurants.
-- On desktop, the heading is on the left and the lead text and buttons on the right, with the dusk band and storefront street below; on a 375 px phone they stack and the storefronts scroll sideways inside their row.
-- The two hero buttons are the same height and share a left edge with the heading.
+- At 1280 px and wider, the heading is on the left and the lead text and buttons on the right, with the dusk band and storefront street below; below 1280 px they stack, and on a 375 px phone and the storefronts scroll sideways inside their row.
+- The two hero buttons are the same height and share a left edge with the heading on phone and tablet, and with the lead text on desktop.
 - The dusk band shows exactly the three approved fact lines.
 - The "Who it's for" line lists the nine business types from the contact form.
-- No more than 2 buttons are visible on any screen.
-- The five website features (menu, prices, deals and combos, location, reviews) are listed.
-- The pricing preview reads exactly "$60 the first month, then $40 a month".
+- No more than 2 buttons are visible on any screen, not counting the header button.
+- The five website features (menu, prices, deals and combos, location, reviews) are listed, plus the optional reservations service.
+- The pricing preview reads exactly "$60 the first month, then $45 a month".
 - Clicking "Get My Info Doc →" opens the Contact page.
 - Clicking "See What's Included" opens the Offerings page.
 - Any example-site visual is labeled as an example or demo, not as client work.
@@ -261,6 +263,7 @@ One package (website build plus ongoing monthly management). The cost of buildin
   - Deals and combos
   - Location
   - Reviews
+  - Optional reservations service, at no extra cost from us (see below)
 - Monthly management includes:
   - Content updates (hours, menu changes, prices, photos, specials)
   - Checking that your site is up and its buttons work
@@ -269,19 +272,26 @@ One package (website build plus ongoing monthly management). The cost of buildin
   - A monthly report
   - Up to 2 edits a month
   - Seasonal refreshes (holiday hours, promotions)
-  - Content updates and seasonal refreshes do **not** count toward the 2 edits. An edit is any other change to the site, such as rewording a section, adding a new section, or changing the layout.
+  - Content updates, seasonal refreshes, and setting up the reservations service do **not** count toward the 2 edits. An edit is any other change to the site, such as rewording a section, adding a new section, or changing the layout.
 - Pricing approach:
   - $60 for the first month
-  - $40 a month after that
+  - $45 a month after that
   - The cost of building the website is included in these monthly payments
 - Important details or conditions:
-  - Minimum: 4 payments ($60 + $40 + $40 + $40) and 4 months before you can cancel
+  - Minimum: 4 payments ($60 + $45 + $45 + $45 = $195 total) and 4 months before you can cancel
   - After the minimum, you choose how many months to continue
   - You own your finished website. If you stop paying, you keep it and manage it yourself.
+  - Payment methods: cash or Venmo.
   - `[NEEDS DECISION: the handoff process when a client cancels]`
 - How it starts: Mainstreet Sites SD builds a demo of your restaurant's website and shows it to you in person before you decide.
 - Image: `[NEEDS ASSET: example restaurant websites (demo sites)]`
 - CTA: "Get Started →" at the bottom of the package card (Contact page)
+
+### Reservations service (optional, no extra cost from us)
+
+Shown on the Offerings page inside the package card, under the two lists, with exactly this text: "We can add a Reserve or Book Now button (or a booking widget) linked to a booking service in your name, like OpenTable, Resy, or Square Appointments (you pay any service fees), or a reservation request form that emails you. A request is not a confirmed booking."
+
+How it works (not shown on the page): during onboarding we ask, yes or no, "Do you want a reservations service connected to your website?" If yes, it is either a Reserve/Book Now button or embedded widget linked to a booking service in the client's name (OpenTable, Resy, Tock, Yelp, Square Appointments, Calendly, Booksy, Vagaro, etc.; the client pays any service fees), or a reservation request form that emails the owner, clearly labeled as a request, not a confirmed booking. Mainstreet Sites SD never builds its own booking system and never stores customers' booking information. Setting it up does not count toward the 2 edits.
 
 ## Offering Priority
 
@@ -296,11 +306,13 @@ The one package is the entire focus of the page. Pricing and the minimum term re
 
 - Visitors can understand what the business offers.
 - The offering structure matches the business (one package, not multiple services).
-- Approved pricing information appears correctly: "$60" for the first month and "$40" a month after.
+- Approved pricing information appears correctly: "$60" for the first month, "$45" a month after, and the $195 minimum total.
+- Payment methods read "cash or Venmo".
+- The reservations block appears with the approved wording, and the page has no booking widget, booking link, or reservation form.
 - The minimum of 4 payments and 4 months appears on the same screen area as the pricing, not in fine print.
 - The statement that the client owns the finished website appears.
-- All five website features and all seven management items appear.
-- "Up to 2 edits a month" appears exactly, with the note that content updates and seasonal refreshes don't count toward them.
+- All five website features, the optional reservations service, and all seven management items appear.
+- "Up to 2 edits a month" appears exactly, with the note that content updates, seasonal refreshes, and reservations setup don't count toward them.
 - No offerings, prices, or claims are invented.
 - No additional packages, discounts, or guarantees appear.
 - Clicking "Get My Info Doc →" (or "Get Started →") opens the Contact page.
@@ -336,8 +348,8 @@ Mainstreet Sites SD started as a way to build websites for trade workers. Gather
 
 ## Visual Content
 
-- Screenshots of tradesitessd.com and Kevin's dad's site (available), labeled accurately
-- Photo of Kevin and Kayden: `[NEEDS DECISION: whether to include a team photo]` and `[NEEDS ASSET: team photo, if included]`. Until decided, show no people photo and no placeholder that implies one.
+- Screenshots of tradesitessd.com and Kevin's dad's site, labeled accurately: `[NEEDS ASSET: screenshots of tradesitessd.com and Kevin's dad's site]`. Until provided, a visible placeholder box shows the flag (CR-001 D8).
+- No team photo for now (CR-001 D7). Show no people photo and no placeholder that implies one.
 
 ## CTA
 
@@ -393,7 +405,8 @@ The visitor gives only one contact method. No address or payment fields.
 Each business type gets its own tailored info document. They are not the same. Each one includes:
 
 - What Mainstreet Sites SD is (name, what it does, service area: all of San Diego)
-- The package, pricing ($60 the first month, then $40 a month, 4-payment and 4-month minimum), and what's included
+- The package, pricing ($60 the first month, then $45 a month, 4-payment and 4-month minimum, $195 total), payment methods (cash or Venmo), what's included, and the optional reservations service
+- The onboarding question "Do you want a reservations service connected to your website?" in the "What we need from you" list
 - Basic information Mainstreet Sites SD needs from the customer's business: business name, location, hours, and similar basics
 - Custom information requests specific to that business type
 - How to buy the service
@@ -539,9 +552,9 @@ Show by source:
 
 ## Available Assets
 
-- Logo: Available (full-color, one-color, dark-background version, icon mark, favicons)
-- Business or owner images: None. `[NEEDS DECISION: whether to include a team photo]` `[NEEDS ASSET: team photo, if included]`
-- Product or service images: Screenshots of tradesitessd.com and Kevin's dad's site available. `[NEEDS ASSET: example restaurant websites (demo sites)]`
+- Logo: favicons only. `[NEEDS ASSET: logo.svg, logo-on-dark.svg, logo-mono.svg, mark.svg]` (temporary stand-in until provided)
+- Business or owner images: None. No team photo for now (CR-001 D7).
+- Product or service images: `[NEEDS ASSET: screenshots of tradesitessd.com and Kevin's dad's site]` `[NEEDS ASSET: example restaurant websites (demo sites)]` `[NEEDS ASSET: example barbershop website (demo site)]` `[NEEDS ASSET: example bakery website (demo site)]`
 - Graphics: None beyond the logo
 - Info documents: drafts for all 9 business types in `info-docs/`, awaiting student approval
 - Other: Existing written content (client debrief and client information guide) may be used as reference for wording, but only facts matching `business-brief.md` may appear on the site. The debrief's 555 placeholder phone number must not be used.
@@ -552,8 +565,7 @@ Unresolved items may remain during planning but must be resolved before the phas
 
 ## Needs Decision
 
-- `[NEEDS DECISION: whether to include a team photo]`
-  - Must be resolved before: Phase 3
+- ~~Whether to include a team photo~~: resolved by CR-001 D7 (no team photo for now).
 - `[NEEDS DECISION: which marketing campaign sources to track with utm_source]`
   - Must be resolved before: Phase 6
 - `[NEEDS DECISION: the handoff process when a client cancels]`
@@ -576,10 +588,13 @@ Unresolved items may remain during planning but must be resolved before the phas
 
 ## Needs Asset
 
-- `[NEEDS ASSET: example restaurant websites (demo sites)]`
-  - Must be resolved before: Phase 3
-- `[NEEDS ASSET: team photo, if included]`
-  - Must be resolved before: Phase 3 (only if the photo is included)
+- `[NEEDS ASSET: example restaurant websites (demo sites)]`, `[NEEDS ASSET: example barbershop website (demo site)]`, `[NEEDS ASSET: example bakery website (demo site)]`
+  - CR-001 D6: the design ships with labeled placeholder windows; real demos replace them later.
+  - Must be resolved before: Phase 6
+- `[NEEDS ASSET: logo.svg, logo-on-dark.svg, logo-mono.svg, mark.svg]`
+  - Must be resolved before: Phase 6
+- `[NEEDS ASSET: screenshots of tradesitessd.com and Kevin's dad's site]`
+  - Must be resolved before: Phase 6
 
 # 12. Additional Student Requirements
 
@@ -589,6 +604,7 @@ Unresolved items may remain during planning but must be resolved before the phas
 - Once real clients exist, their websites may be shown as examples only after the student adds them to this spec.
 - Every contact form submission receives the tailored info document for its business type within 5 minutes, by email or text.
 - **Data safety (matches the hub's CR-003):** never put real form submissions in code, tests, commits, or GitHub; use fake data for testing; database exports go in `.gitignore`; keys and the `INTAKE_SECRET` live in Replit Secrets only.
+- Never add a booking system or a reservation form to this site. Never store anyone's booking information.
 - Contact form submissions stream into the private team hub. Other than that connection, the team hub, AI management tools, and business operations (money split, roles) are separate from this website and must not be added to it.
 
 # 13. Student Review Checklist

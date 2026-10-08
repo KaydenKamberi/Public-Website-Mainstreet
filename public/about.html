@@ -8,6 +8,10 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-192.png">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Instrument+Sans:wght@400;500;600&display=swap">
+  <script>document.documentElement.classList.add("js");</script>
   <link rel="stylesheet" href="/style.css">
   <script src="/script.js" defer></script>
 </head>
@@ -16,13 +20,12 @@
 
   <header class="site-header">
     <div class="header-inner">
-      <!-- Temporary logo: swap for brand/logo.svg once the SVG files are available. -->
+      <!-- [NEEDS ASSET: logo.svg, logo-on-dark.svg] Temporary stand-in logo (CR-001 D5): swap in brand/logo.svg once the SVG files are available. -->
       <a class="logo" href="/">
         <img src="/images/favicon-192.png" alt="" width="32" height="32">
         <span>Mainstreet Sites SD</span>
       </a>
-      <span class="logo-place">San Diego</span>
-      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="menu-icon" aria-hidden="true"></span>Menu</button>
       <nav class="site-nav" id="site-nav" aria-label="Main">
         <ul>
           <li><a href="/">Home</a></li>
@@ -39,19 +42,21 @@
     <section class="page-hero" data-hero>
       <div class="container">
         <h1>About Mainstreet Sites SD</h1>
+        <div class="gold-rule" aria-hidden="true"></div>
         <p class="lead">Mainstreet Sites SD is run by co-founders Kevin and Kayden, with team member Cheyenne. We want to grow the skills available to us into a service for old-fashioned businesses that can't compete and grow with the future.</p>
       </div>
     </section>
 
     <section class="section">
-      <div class="container">
+      <div class="container split">
         <h2>Why we started</h2>
         <p>Mainstreet Sites SD started as a way to build websites for trade workers. Gathering each customer's information for their site in a limited amount of time was very difficult, so the business turned to restaurants, whose information is easier to gather. Restaurants lose customers when people can't find them online, and Mainstreet Sites SD builds the site they're missing.</p>
       </div>
     </section>
 
     <section class="section">
-      <div class="container">
+      <div class="container about-pair">
+        <div>
         <h2>Our experience</h2>
         <ul class="check-list">
           <li>Built and launched tradesitessd.com</li>
@@ -59,25 +64,25 @@
           <li>Taking the Global IT class</li>
           <li>Took a web design class last year</li>
         </ul>
-        <!-- [NEEDS ASSET: screenshots of tradesitessd.com and Kevin's dad's site, labeled accurately] -->
+        </div>
+        <p class="placeholder placeholder-text">[NEEDS ASSET: screenshots of tradesitessd.com and Kevin's dad's site, labeled accurately]</p>
       </div>
     </section>
 
     <section class="section">
-      <div class="container">
+      <div class="container about-pair">
+        <div>
         <h2>How we work</h2>
         <ul class="check-list">
           <li>Every restaurant owner sees a demo of their own website before committing.</li>
           <li>We pitch in person, meeting the owner or manager face to face.</li>
           <li>Once we have customers, their websites will be shown as examples on this site.</li>
         </ul>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container">
+        </div>
+        <div>
         <h2>Meet Cheyenne</h2>
         <p class="placeholder placeholder-text">[NEEDS CONTENT: Cheyenne's short story and real experience, in his words]</p>
+        </div>
       </div>
     </section>
 

@@ -24,6 +24,12 @@
   --color-glow-shadow: rgba(245, 198, 107, 0.30);
   --color-night-text: #E7E2D6;    /* body text on night */
   --color-marigold-bright: #F5C66B; /* text accents on night only */
+  --color-dusk-mid: #1A2B33;      /* middle stop of the day-to-dusk gradient */
+  --gradient-dusk: linear-gradient(var(--color-cream) 0%, var(--color-dusk-mid) 30%, var(--color-night) 100%); /* Home only */
+
+  /* Focus ring (CR-001 D16) */
+  --focus-light: var(--color-forest);   /* on cream, paper */
+  --focus-dark: var(--color-marigold);  /* on night */
 
   /* Type */
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
@@ -34,10 +40,12 @@
   --text-lead: clamp(17px, 1.4vw, 19px);
   --text-body: 16px;
   --text-small: 14px;
-  --leading-tight: 1.03;
+  --leading-tight: 1.03;          /* hero heading */
+  --leading-heading: 1.15;        /* h2, h3 */
   --leading-body: 1.6;
   --weight-display: 500;
   --weight-display-strong: 600;
+  --measure: 30em;                /* about 65 characters of body text */
 
   /* Space (8px base) */
   --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
@@ -47,14 +55,22 @@
   --page-pad: clamp(24px, 6vw, 88px);
   --section-gap: clamp(72px, 9vw, 120px);
 
+  /* Storefront street (R3-3) */
+  --awning-height: var(--space-5);
+  --storefront-lift: var(--space-6);
+  --street-gap: var(--space-5);
+  --street-line: var(--space-2);
+
   /* Shape */
   --radius-pill: 999px;
   --radius-card: 12px;
   --radius-awning: 6px;
+  --radius-field: 10px;
   --border: 1px solid var(--color-line);
 
   /* Motion */
   --ease: cubic-bezier(.2, .7, .2, 1);
   --duration: 400ms;
+  --duration-fast: 150ms;
 }
-@media (prefers-reduced-motion: reduce) { :root { --duration: 0ms; } }
+@media (prefers-reduced-motion: reduce) { :root { --duration: 0ms; --duration-fast: 0ms; } }

@@ -27,7 +27,7 @@
 - Name: [NEEDS DECISION: name for the package, if any]
 - Type: Service package (website build plus ongoing monthly management)
 - Description:
-  - Website includes: menu, prices, deals and combos, location, and reviews. More may be added as the business works with customers.
+  - Website includes: menu, prices, deals and combos, location, and reviews, and an optional reservations service at no extra cost from us (a button or widget to a booking service in the client's name, with the client paying any service fees, or a reservation request form; a request is not a confirmed booking). More may be added as the business works with customers.
   - Monthly management includes:
     - Content updates (hours, menu changes, prices, photos, specials)
     - Monitoring that the site is up and its buttons work
@@ -36,12 +36,13 @@
     - A monthly report
     - Up to 2 edits a month
     - Seasonal refreshes (holiday hours, promotions)
-- Pricing: $60 for the first month, then $40 a month.
+- Pricing: $60 for the first month, then $45 a month.
+- Payment methods: cash or Venmo.
 - Importance or priority: The only offering; the core of the business.
 - Other details:
-  - Minimum term: 4 payments ($60 + $40 + $40 + $40) and 4 months before a client can cancel.
+  - Minimum term: 4 payments ($60 + $45 + $45 + $45 = $195 total) and 4 months before a client can cancel.
   - The client owns the finished website. If they stop paying, they keep it and manage it themselves.
-  - [NEEDS DECISION: whether content updates and seasonal refreshes count toward the 2 edits a month]
+  - Content updates, seasonal refreshes, and reservations setup do not count toward the 2 edits (decided; see spec §5).
   - [NEEDS DECISION: the handoff process when a client cancels]
 
 ## 4. Customer Actions
@@ -111,7 +112,6 @@
 ### Needs Decision
 
 - Name for the package, if any
-- Whether content updates and seasonal refreshes count toward the 2 edits a month
 - The handoff process when a client cancels
 - The reply time to promise on the site
 - Whether to use an automatic reply with a prepared info document

@@ -8,6 +8,10 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-192.png">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Instrument+Sans:wght@400;500;600&display=swap">
+  <script>document.documentElement.classList.add("js");</script>
   <link rel="stylesheet" href="/style.css">
   <script src="/script.js" defer></script>
 </head>
@@ -16,13 +20,12 @@
 
   <header class="site-header">
     <div class="header-inner">
-      <!-- Temporary logo: swap for brand/logo.svg once the SVG files are available. -->
+      <!-- [NEEDS ASSET: logo.svg, logo-on-dark.svg] Temporary stand-in logo (CR-001 D5): swap in brand/logo.svg once the SVG files are available. -->
       <a class="logo" href="/">
         <img src="/images/favicon-192.png" alt="" width="32" height="32">
         <span>Mainstreet Sites SD</span>
       </a>
-      <span class="logo-place">San Diego</span>
-      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="menu-icon" aria-hidden="true"></span>Menu</button>
       <nav class="site-nav" id="site-nav" aria-label="Main">
         <ul>
           <li><a href="/">Home</a></li>
@@ -39,6 +42,7 @@
     <section class="page-hero" data-hero>
       <div class="container">
         <h1>Privacy Policy</h1>
+        <div class="gold-rule" aria-hidden="true"></div>
         <p class="placeholder placeholder-text">Effective date: [NEEDS CONTENT: effective date, set at launch]</p>
       </div>
     </section>
