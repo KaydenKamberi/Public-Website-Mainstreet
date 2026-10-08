@@ -2,7 +2,7 @@
 
 ## Specification Status
 
-`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions. Updated 2026-10-08 by CR-002: design polish, custom section images, concept sites, work wall, reviews section (hidden until real reviews), 404 page.
+`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions. Updated 2026-10-08 by CR-003: wording for all business types, slimmer footer with payment methods, closing band refresh. Updated 2026-10-08 by CR-002: design polish, custom section images, concept sites, work wall, reviews section (hidden until real reviews), 404 page.
 
 This document defines the requirements for this student's business website.
 
@@ -35,7 +35,7 @@ Mainstreet Sites SD builds websites for businesses, mainly family-owned restaura
 
 ## Target Customer
 
-Family-owned restaurants in San Diego that have no website and are not big chain-operated restaurants. The business focuses on smaller restaurants until it has more proof of its work.
+Local small businesses in San Diego that are not big chains: restaurants, HVAC, barbershops, car detailing, gyms and martial arts studios, lash studios, house cleaning, bakeries, and tattoo shops (the contact form's business types). Family-owned restaurants with no website are the first focus (CR-003 D1). Earlier wording: Family-owned restaurants in San Diego that have no website and are not big chain-operated restaurants. The business focuses on smaller restaurants until it has more proof of its work.
 
 ## Customer Need
 
@@ -137,7 +137,8 @@ The logo in the header links to Home. Under 1024 px, navigation collapses into a
 - Phone for texts: `[NEEDS CONTENT: business phone number (planned: a free Google Voice number that rings both Kevin and Kayden and forwards texts to the business email)]`
 - Links: Home, Offerings, About, Contact, Privacy Policy
 - Copyright line with the current year and business name
-- Social media links: Instagram (and possibly Facebook), added once the accounts exist. `[NEEDS CONTENT: Instagram and Facebook handles]`
+- Payment methods: "We accept" with Venmo and Cash badges (CR-003)
+- Social media links: Instagram (and possibly Facebook), added once the accounts exist. `[NEEDS CONTENT: Instagram and Facebook handles]` A "Follow us" row is built and hidden in every footer; turn it on by adding the links (CR-003 D3).
 - No admin link in the public footer
 
 ## Primary CTA
@@ -154,7 +155,7 @@ Buttons appear **only** in these spots. No other buttons anywhere.
 | Header, right side (every page except Contact; hidden on phones under 768 px, where the sticky bar replaces it) | Primary button "Get My Info Doc →" |
 | Home hero, under the lead text | Primary "Get My Info Doc →" + secondary "See What's Included" side by side (stacked at equal full width on phones under 768 px). Under them, one small line: "$60 the first month, then $45 a month." followed by a text link "See full pricing" (to Offerings). |
 | Offerings, bottom of the package card | Primary "Get Started →" (to Contact) |
-| Bottom of Home, Offerings, and About | The same closing band: a short heading, one sentence, and one primary "Get My Info Doc →" button |
+| Bottom of Home, Offerings, and About | The same closing band: a short heading, one sentence, and one primary "Get My Info Doc →" button (button on the right on desktop, under a marigold awning stripe) |
 | Contact page | Form submit button "Send Message". Under the form: text links "Email us" and "Text us" once the real email and phone exist. |
 | Phones only (under 768 px) | A sticky bottom bar with one "Get My Info Doc →" button. It appears only after the visitor scrolls past the hero and never appears on the Contact page. |
 
@@ -209,7 +210,7 @@ Lead text under the heading: "**Mainstreet Sites SD builds and manages websites 
    - "**Updates included.** Managed every month."
 4. **Who it's for:** one line, "Built for San Diego's local businesses." ("local businesses" is the highlight phrase, in marigold-text, not italic) followed by the business types from the contact form's dropdown, as plain text: restaurants, HVAC, barbershops, car detailing, gyms and martial arts studios, lash studios, house cleaning, bakeries, and tattoo shops.
 5. **Why a website matters:** many people search online before visiting a business; without a site, they may lose interest or not make the trip.
-6. **What's included:** the website (for restaurants: menu, prices, deals and combos, location, reviews, and an optional reservations service at no extra cost from us) and the monthly management, with a "See what's included" text link to Offerings.
+6. **What's included:** the website, built for the visitor's type of business (menu or services, prices, deals and specials, location and hours, reviews, and an optional reservations or booking service at no extra cost from us) and the monthly management, with a "See what's included" text link to Offerings.
 7. **How it works:** 4 numbered steps, each with its own image: we build a demo, we show it to you, you decide, we launch and keep it updated.
 8. **Reviews** (CR-002 P9): stays hidden until at least one real review with written permission exists.
 9. **Closing band** with the primary button.
@@ -241,7 +242,7 @@ Lead text under the heading: "**Mainstreet Sites SD builds and manages websites 
 - The dusk band shows exactly the three approved fact lines.
 - The "Who it's for" line lists the nine business types from the contact form.
 - No more than 2 buttons are visible on any screen, not counting the header button.
-- The five website features (menu, prices, deals and combos, location, reviews) are listed, plus the optional reservations service.
+- The five website features (menu or services, prices, deals and specials, location and hours, reviews) are listed, plus the optional reservations or booking service.
 - The pricing preview reads exactly "$60 the first month, then $45 a month".
 - Clicking "Get My Info Doc →" opens the Contact page.
 - Clicking "See What's Included" opens the Offerings page.
@@ -264,14 +265,14 @@ One package (website build plus ongoing monthly management). The cost of buildin
 - Type: Service package
 - Description: A website built for your restaurant, then managed by Mainstreet Sites SD every month so you don't have to worry about it.
 - Your website includes:
-  - Menu
+  - Your menu or services
   - Prices
-  - Deals and combos
-  - Location
+  - Deals and specials
+  - Location and hours
   - Reviews
-  - Optional reservations service, at no extra cost from us (see below)
+  - Optional reservations or booking service, at no extra cost from us (see below)
 - Monthly management includes:
-  - Content updates (hours, menu changes, prices, photos, specials)
+  - Content updates (hours, menu or service changes, prices, photos, specials)
   - Checking that your site is up and its buttons work
   - Domain renewal care
   - Google Business Profile updates
