@@ -1601,6 +1601,10 @@ main:has(> .closing-band:last-child) + .site-footer {
 .lead-facts dt { color: var(--color-subtle); font-size: var(--text-small); }
 .lead-facts dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
 .lead-links { margin: 0; padding: 0; list-style: none; }
+.hub-answer { max-width: none; margin: var(--space-2) 0 0; color: var(--color-body); }
+.send-all { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin: 0 0 var(--space-4); }
+.send-all[hidden] { display: none; }
+.send-all p { margin: 0; }
 .lead-links li { max-width: none; }
 .lead-facts .badge { white-space: normal; }
 .lead-message { max-width: none; padding: var(--space-3) var(--space-4); border-radius: var(--radius-field); background: var(--color-cream); white-space: pre-wrap; overflow-wrap: anywhere; }

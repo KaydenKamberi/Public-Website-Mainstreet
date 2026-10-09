@@ -61,6 +61,33 @@ function hubBadge(lead) {
   return el("span", { class: "badge badge-wait", text: "Not in the hub yet" });
 }
 
+// The hub's last answer (CR-008), in plain words. Shown only while a lead isn't in the hub.
+function describeAnswer(answer) {
+  const detail = answer.error ? ` (${answer.error})` : "";
+  switch (answer.status) {
+    case null: return `No answer from the hub${detail}. Trying again automatically.`;
+    case 400: return `Hub refused it as invalid${answer.error ? `: ${answer.error}` : ""}. Not retried.`;
+    case 401: return "Hub rejected the signature: check INTAKE_SECRET matches in both apps.";
+    case 403: return "Hub address must start with https://, check HUB_URL.";
+    case 503: return "The hub's INTAKE_SECRET isn't set yet.";
+    case 429: return `Hub said too many at once (429)${detail}. Trying again automatically.`;
+    default: return `Hub answered ${answer.status}${detail}. Trying again automatically.`;
+  }
+}
+
+function hubAnswer(lead) {
+  const answer = lead.forward_last_answer;
+  if (lead.forwarded || !answer) return null;
+  return el("p", { class: "hub-answer small", text: `Last try ${formatTime(answer.at)}: ${describeAnswer(answer)}` });
+}
+
+function sendProblem(err) {
+  if (err.message === "hub not set up") return "HUB_URL or INTAKE_SECRET isn't set on this site.";
+  if (err.status === 429) return "That's a lot of sends in 15 minutes. Wait a few minutes, then try again.";
+  if (err.status === 409) return "Already sending. Try again in a minute.";
+  return "Could not send. Try again.";
+}
+
 function contactLine(lead) {
   if (lead.contact_method === "email" && lead.email) {
     return el("a", { href: `mailto:${encodeURIComponent(lead.email).replace("%40", "@")}`, text: lead.email });
@@ -122,6 +149,25 @@ function leadCard(lead) {
     }
   });
 
+  // "Send again" (CR-008): only for leads not in the hub yet.
+  let sendAgain = null;
+  if (!lead.forwarded) {
+    sendAgain = el("button", { class: "button button-secondary", type: "button", text: "Send again" });
+    sendAgain.addEventListener("click", async () => {
+      sendAgain.disabled = true;
+      sendAgain.textContent = "Sending…";
+      try {
+        const { lead: updated } = await api(`/api/admin/leads/${lead.id}/forward`, { method: "POST", body: {} });
+        card.replaceWith(leadCard(updated));
+      } catch (err) {
+        if (err.message === "login required") return;
+        saved.textContent = sendProblem(err);
+        sendAgain.disabled = false;
+        sendAgain.textContent = "Send again";
+      }
+    });
+  }
+
   const card = el("li", { class: `lead-card${lead.status === "responded" ? " is-responded" : ""}` },
     el("div", { class: "lead-head" },
       el("div", {},
@@ -134,19 +180,20 @@ function leadCard(lead) {
       el("dt", { text: "Info doc by" }), el("dd", { text: lead.contact_method === "text" ? "Text" : "Email" }),
       el("dt", { text: "Contact" }), el("dd", {}, contactLine(lead)),
       el("dt", { text: "Consent" }), el("dd", { text: lead.consent ? "Yes" : "No" }),
-      el("dt", { text: "Team hub" }), el("dd", {}, hubBadge(lead)),
+      el("dt", { text: "Team hub" }), el("dd", {}, hubBadge(lead), hubAnswer(lead)),
       lead.responded_at ? el("dt", { text: "Responded" }) : null,
       lead.responded_at ? el("dd", { text: formatTime(lead.responded_at) }) : null),
     lead.message ? el("p", { class: "lead-message", text: lead.message }) : null,
     el("div", { class: "lead-actions" },
       el("div", { class: "field" }, el("label", { for: statusSelect.id, text: "Status" }), statusSelect),
       el("div", { class: "field lead-note" }, el("label", { for: note.id, text: "Response note" }), note),
-      el("div", { class: "lead-buttons" }, save, remove, saved)));
+      el("div", { class: "lead-buttons" }, save, sendAgain, remove, saved)));
   return card;
 }
 
 async function loadLeads() {
   const list = $("[data-lead-list]");
+  $("[data-send-all]").hidden = currentFilter !== "unforwarded";
   setStatus("Loading leads…");
   try {
     const { leads } = await api(`/api/admin/leads?filter=${currentFilter}`);
@@ -155,6 +202,29 @@ async function loadLeads() {
   } catch (err) {
     if (err.message !== "login required") setStatus("Could not load leads. Refresh to try again.");
   }
+}
+
+// "Send all again" (CR-008): every stuck lead, one at a time, then reload the list.
+function setupSendAll() {
+  const button = $("[data-send-all-button]");
+  const result = $("[data-send-all-result]");
+  button.addEventListener("click", async () => {
+    button.disabled = true;
+    result.textContent = "Sending…";
+    try {
+      const { delivered, refused, left, stoppedBy } = await api("/api/admin/leads/forward-all", { method: "POST", body: {} });
+      const parts = [`${delivered} now in the team hub.`];
+      if (refused) parts.push(`${refused} refused by the hub.`);
+      if (stoppedBy && stoppedBy.limit) parts.push(`Paused at this site's limit of 50 per 15 minutes; ${left} more go out automatically.`);
+      else if (stoppedBy) parts.push(`Stopped: ${describeAnswer(stoppedBy)} ${left} not sent yet.`);
+      result.textContent = parts.join(" ");
+      await loadLeads();
+    } catch (err) {
+      if (err.message !== "login required") result.textContent = sendProblem(err);
+    } finally {
+      button.disabled = false;
+    }
+  });
 }
 
 // ---------- Marketing ----------
@@ -225,6 +295,7 @@ function setupApp() {
   filters.forEach((chip) => chip.addEventListener("click", () => {
     pressOnly(filters, chip);
     currentFilter = chip.dataset.filter;
+    $("[data-send-all-result]").textContent = "";
     loadLeads();
   }));
   const ranges = $$("[data-range]");
@@ -234,6 +305,7 @@ function setupApp() {
     loadStats();
   }));
   setupLinkMaker();
+  setupSendAll();
   $("[data-logout]").addEventListener("click", async () => {
     await api("/api/admin/logout", { method: "POST", body: {} }).catch(() => {});
     showView("login");
