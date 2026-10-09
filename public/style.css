@@ -1588,7 +1588,9 @@ main:has(> .closing-band:last-child) + .site-footer {
 .badge-warn { background: var(--color-danger-soft); color: var(--color-danger); }
 .lead-facts { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-1) var(--space-4); margin: var(--space-4) 0; }
 .lead-facts dt { color: var(--color-subtle); font-size: var(--text-small); }
-.lead-facts dd { margin: 0; }
+.lead-facts dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.lead-links { margin: 0; padding: 0; list-style: none; }
+.lead-links li { max-width: none; }
 .lead-facts .badge { white-space: normal; }
 .lead-message { max-width: none; padding: var(--space-3) var(--space-4); border-radius: var(--radius-field); background: var(--color-cream); white-space: pre-wrap; overflow-wrap: anywhere; }
 .lead-actions { display: grid; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--color-line-soft); }

@@ -69,6 +69,25 @@ function contactLine(lead) {
   return el("span", { text: "No contact given" });
 }
 
+// Only real http(s) addresses become links (opening in a new tab); @handles and anything else stay text.
+function linkItem(value) {
+  let href = null;
+  try {
+    const url = new URL(value);
+    if (url.protocol === "http:" || url.protocol === "https:") href = url.href;
+  } catch (err) {
+    // Not a full web address.
+  }
+  return el("li", {}, href
+    ? el("a", { href, target: "_blank", rel: "noopener noreferrer", text: value })
+    : el("span", { text: value }));
+}
+
+function linksList(lead) {
+  const links = Array.isArray(lead.links) ? lead.links : [];
+  return links.length ? el("ul", { class: "lead-links" }, ...links.map(linkItem)) : el("span", { text: "None" });
+}
+
 function leadCard(lead) {
   const statusSelect = el("select", { id: `status-${lead.id}` },
     el("option", { value: "new", text: "New" }),
@@ -110,6 +129,8 @@ function leadCard(lead) {
         el("p", { class: "small", text: `${lead.business_type} · ${formatTime(lead.created_at)} · source: ${lead.source}` })),
       el("span", { class: `badge ${lead.status === "responded" ? "badge-ok" : "badge-new"}`, text: lead.status === "responded" ? "Responded" : "New" })),
     el("dl", { class: "lead-facts" },
+      el("dt", { text: "Location" }), el("dd", { text: lead.location || "Not given" }),
+      el("dt", { text: "Links" }), el("dd", {}, linksList(lead)),
       el("dt", { text: "Info doc by" }), el("dd", { text: lead.contact_method === "text" ? "Text" : "Email" }),
       el("dt", { text: "Contact" }), el("dd", {}, contactLine(lead)),
       el("dt", { text: "Consent" }), el("dd", { text: lead.consent ? "Yes" : "No" }),
