@@ -520,6 +520,7 @@ This wording is a starting point, not legal advice. The student may want a paren
 - Resending an info document happens in the team hub (CR-004 D2). The admin can delete this site's copy of a lead, with a confirm step, when someone asks for their information to be deleted (CR-004 D6).
 - Status options: `new` and `responded`. Filters: All, New, Responded, Not in the hub yet.
 - Login: one shared team password from the Replit Secret `ADMIN_PASSWORD`; a signed 12-hour session cookie; logins pause for 15 minutes after 5 wrong tries; the admin stays locked if the secret is not set (CR-004 D3).
+- Hidden from outsiders (CR-005): `/admin`, `/admin.html`, `/admin.js`, and `/api/admin/*` answer exactly like a missing page unless the device has been marked as a team device by opening the private team link `/team/<ADMIN_ACCESS_KEY>` (Replit Secret) once. The mark is a signed cookie that lasts 180 days. Changing `ADMIN_ACCESS_KEY` unmarks every device. Wrong team links show "Page not found", and after 5 wrong tries in 15 minutes a connection stops being checked. If `ADMIN_ACCESS_KEY` is not set, the admin is completely hidden. The team password is still required on team devices.
 - Marking a lead `responded` records the responded date and time.
 - Leads are real customer contacts. Store only what the form collects, and never show lead data outside the protected admin area.
 - Day-to-day lead management happens in the private team hub. This site's admin area is a backup view that also shows whether each submission reached the hub (`forwarded`: yes or no).
