@@ -110,8 +110,34 @@ if (contactForm) {
   const submitButton = contactForm.querySelector('button[type="submit"]');
   const methodFields = contactForm.querySelectorAll("[data-method-field]");
   const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const linkBoxes = contactForm.querySelector("[data-link-boxes]");
+  const addLink = contactForm.querySelector("[data-add-link]");
+  const MAX_LINKS = 5;
 
   const chosenMethod = () => fields.contactMethod.value;
+  const linkInputs = () => [...linkBoxes.querySelectorAll("input")];
+
+  // Links: one box to start, "Add another link" adds up to 5 (CR-006).
+  function showAddLink() {
+    addLink.hidden = linkInputs().length >= MAX_LINKS;
+  }
+
+  function resetLinks() {
+    linkInputs().slice(1).forEach((input) => input.remove());
+    showAddLink();
+  }
+
+  addLink.addEventListener("click", () => {
+    const inputs = linkInputs();
+    if (inputs.length >= MAX_LINKS) return;
+    const input = inputs[0].cloneNode();
+    input.value = "";
+    input.removeAttribute("aria-invalid");
+    input.setAttribute("aria-label", `Link ${inputs.length + 1}`);
+    linkBoxes.append(input);
+    showAddLink();
+    input.focus();
+  });
 
   function showMethodField() {
     methodFields.forEach((field) => {
@@ -144,6 +170,15 @@ if (contactForm) {
     check(fields.name, "name-error", fields.name.value.trim() ? "" : "Please enter your name.");
     check(fields.businessType, "business-type-error",
       fields.businessType.value ? "" : "Please choose your business type.");
+
+    const location = fields.location.value.trim();
+    check(fields.location, "location-error", !location
+      ? "Please tell us where your business is."
+      : location.length > 120 ? "Please keep this to 120 characters." : "");
+
+    const longLink = linkInputs().find((input) => input.value.trim().length > 500);
+    linkInputs().forEach((input) => input.removeAttribute("aria-invalid"));
+    check(longLink || linkInputs()[0], "links-error", longLink ? "Each link can be up to 500 characters." : "");
     check(fields.contactMethod, "contact-method-error",
       chosenMethod() ? "" : "Please choose Email or Text.");
 
@@ -191,6 +226,8 @@ if (contactForm) {
       contactMethod: method,
       email: method === "email" ? fields.email.value.trim() : "",
       phone: method === "text" ? fields.phone.value.trim() : "",
+      location: fields.location.value.trim(),
+      links: linkInputs().map((input) => input.value.trim()).filter(Boolean),
       message: fields.message.value.trim(),
       consent: fields.consent.checked,
       website: fields.website.value,
@@ -208,6 +245,7 @@ if (contactForm) {
       if (!response.ok) throw new Error(result.error || "Request failed");
 
       contactForm.reset();
+      resetLinks();
       showMethodField();
       status.textContent = result.message;
       status.classList.add("is-success");
@@ -221,6 +259,7 @@ if (contactForm) {
   });
 
   showMethodField();
+  showAddLink();
 }
 
 // Animations only hide content once this script is running, so a failed

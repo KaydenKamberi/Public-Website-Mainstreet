@@ -141,6 +141,13 @@ Load from Google Fonts: Fraunces (500, 600) and Instrument Sans (400, 500, 600).
 | **Stat tile** | Paper tile with a label and a display number. | Admin |
 | **Stats table** | Paper table, tabular numbers, right-aligned numbers. | Admin |
 
+### Components added by CR-006 (2026-10-09)
+
+| Component | Look | Where |
+| --- | --- | --- |
+| **Field hint** | Small subtle text (14px, `--color-subtle`) between a field's label and its box, tied to the box with `aria-describedby`. | Contact form |
+| **Add-a-box link** | A `<button>` that looks like a Text link (forest, underlined, marigold-deep on hover), 44px tall, no pill or border, so it doesn't count as a button in the CTA map. Hidden once the field has its maximum boxes. | Contact form "Add another link" |
+
 ## 6. Layout
 
 - Content width 1264px max, not counting the side padding of 24px (phone) to 88px (desktop).
