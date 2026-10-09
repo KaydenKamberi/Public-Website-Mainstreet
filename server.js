@@ -331,6 +331,77 @@ app.use("/api/leads", (err, req, res, next) => {
   res.status(400).json({ message: MESSAGES.failed, error: "bad request" });
 });
 
+// ---------- Team-only access (CR-005) ----------
+// The admin is invisible unless this device opened the private team link
+// /team/<ADMIN_ACCESS_KEY> once. Everyone else gets the normal "Page not found".
+const ADMIN_ACCESS_KEY = process.env.ADMIN_ACCESS_KEY || null;
+const DEVICE_COOKIE = "ms_team";
+const DEVICE_MS = 180 * 24 * 60 * 60 * 1000;
+const TEAM_LINK_LIMIT = 5;
+const TEAM_LINK_WINDOW_MS = 15 * 60 * 1000;
+const deviceKey = ADMIN_ACCESS_KEY
+  ? crypto.createHash("sha256").update(`mainstreet-team-device:${ADMIN_ACCESS_KEY}`).digest()
+  : null;
+const teamLinkFailures = new Map(); // address -> { count, resetAt }, kept in memory only
+
+function signDevice(value) {
+  return crypto.createHmac("sha256", deviceKey).update(value).digest("base64url");
+}
+
+function sameSecret(a, b) {
+  const hashA = crypto.createHash("sha256").update(String(a)).digest();
+  const hashB = crypto.createHash("sha256").update(String(b)).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
+}
+
+function isTeamDevice(req) {
+  if (!deviceKey) return false;
+  const match = (req.headers.cookie || "").match(new RegExp(`(?:^|;\\s*)${DEVICE_COOKIE}=([^;]+)`));
+  if (!match) return false;
+  const [expires, signature] = match[1].split(".");
+  if (!expires || !signature || Number(expires) < Date.now()) return false;
+  return sameSecret(signature, signDevice(`device.${expires}`));
+}
+
+function sendNotFound(req, res) {
+  res.status(404).sendFile(path.join(__dirname, "public", "404.html"));
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of teamLinkFailures) if (entry.resetAt < now) teamLinkFailures.delete(key);
+}, 60 * 1000).unref();
+
+app.get("/team/:key", (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  const entry = teamLinkFailures.get(req.ip);
+  const blocked = entry && entry.resetAt > Date.now() && entry.count >= TEAM_LINK_LIMIT;
+  if (!ADMIN_ACCESS_KEY || blocked || !sameSecret(req.params.key, ADMIN_ACCESS_KEY)) {
+    if (ADMIN_ACCESS_KEY && !blocked) underLimit(teamLinkFailures, req.ip, TEAM_LINK_LIMIT, TEAM_LINK_WINDOW_MS);
+    return sendNotFound(req, res);
+  }
+  const expires = Date.now() + DEVICE_MS;
+  const parts = [`${DEVICE_COOKIE}=${expires}.${signDevice(`device.${expires}`)}`, "Path=/", "HttpOnly", "SameSite=Lax", `Max-Age=${DEVICE_MS / 1000}`];
+  if (req.secure) parts.push("Secure");
+  res.setHeader("Set-Cookie", parts.join("; "));
+  res.redirect(303, "/admin");
+});
+
+app.use((req, res, next) => {
+  // Normalize first, so /ADMIN, /%61dmin.html, or //admin.html can't slip past.
+  let clean;
+  try {
+    clean = path.posix.normalize(decodeURIComponent(req.path)).toLowerCase();
+  } catch (err) {
+    return sendNotFound(req, res);
+  }
+  const adminRequest = /^\/admin(\.html|\.js)?\/?$/.test(clean) || clean.startsWith("/api/admin");
+  if (adminRequest && !isTeamDevice(req)) return sendNotFound(req, res);
+  if (adminRequest) res.setHeader("Referrer-Policy", "no-referrer");
+  next();
+});
+
 // ---------- Admin (CR-004) ----------
 // One shared team password from the Replit Secret ADMIN_PASSWORD. Without it,
 // the admin stays locked. Sessions are signed cookies that last 12 hours.
@@ -556,9 +627,7 @@ app.use((req, res, next) => {
 
 app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"] }));
 
-app.use((req, res) => {
-  res.status(404).sendFile(path.join(__dirname, "public", "404.html"));
-});
+app.use(sendNotFound);
 
 initDatabase()
   .catch((err) => {
