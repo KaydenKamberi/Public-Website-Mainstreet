@@ -52,6 +52,10 @@ const SCHEMA = `
   ALTER TABLE leads ADD COLUMN IF NOT EXISTS forward_rejected BOOLEAN NOT NULL DEFAULT false;
   UPDATE leads SET submission_id = 'ms_' || replace(gen_random_uuid()::text, '-', '')
    WHERE submission_id IS NULL;
+
+  -- CR-006 (hub intake contract v2): where the business is, and links to it online.
+  ALTER TABLE leads ADD COLUMN IF NOT EXISTS location TEXT;
+  ALTER TABLE leads ADD COLUMN IF NOT EXISTS links JSONB NOT NULL DEFAULT '[]'::jsonb;
 `;
 
 async function initDatabase() {
@@ -81,6 +85,11 @@ const HUB_BUSINESS_TYPES = {
 const BUSINESS_TYPES = Object.keys(HUB_BUSINESS_TYPES);
 const SPECIAL_REQUEST = "Other (special request)";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const LOCATION_MAX = 120;
+const LINKS_MAX = 5;
+const LINK_MAX = 500;
+// Keeps the signed request to the hub well under its 20 KB limit.
+const HUB_TEXT_BYTES_MAX = 16 * 1024;
 
 const MESSAGES = {
   sent: "Thanks! Your message was sent.",
@@ -105,6 +114,8 @@ function validateLead(body) {
     contactMethod: text(body.contactMethod, 10),
     email: null,
     phone: null,
+    location: typeof body.location === "string" ? body.location.trim() : "",
+    links: [],
     message: text(body.message, 2000) || null,
     consent: body.consent === true || body.consent === "yes",
     source: text(body.source, 100).toLowerCase() || "direct",
@@ -112,6 +123,20 @@ function validateLead(body) {
 
   if (!lead.name) errors.name = "Name is required.";
   if (!BUSINESS_TYPES.includes(lead.businessType)) errors.businessType = "Choose a business type.";
+  if (!lead.location || lead.location.length > LOCATION_MAX) {
+    errors.location = `Location is required, up to ${LOCATION_MAX} characters.`;
+  }
+
+  // One link arrives as a string (plain form post), several as a list. Empty boxes are dropped.
+  const rawLinks = body.links === undefined ? [] : [].concat(body.links);
+  if (rawLinks.some((link) => typeof link !== "string")) {
+    errors.links = "Links must be text.";
+  } else {
+    lead.links = rawLinks.map((link) => link.trim()).filter(Boolean);
+    if (lead.links.length > LINKS_MAX || lead.links.some((link) => link.length > LINK_MAX)) {
+      errors.links = `Up to ${LINKS_MAX} links, each up to ${LINK_MAX} characters.`;
+    }
+  }
   if (lead.contactMethod === "email") {
     const email = text(body.email, 254);
     if (EMAIL_PATTERN.test(email)) lead.email = email;
@@ -123,6 +148,9 @@ function validateLead(body) {
     errors.contactMethod = "Choose Email or Text.";
   }
   if (!lead.consent) errors.consent = "Consent is required.";
+
+  const textBytes = Buffer.byteLength(JSON.stringify([lead.name, lead.location, lead.links, lead.message]));
+  if (textBytes > HUB_TEXT_BYTES_MAX) errors.message = "The form is too long.";
 
   return { lead, errors };
 }
@@ -158,6 +186,9 @@ async function forwardLead(row) {
     email: row.email,
     phone: row.phone,
     message: row.message,
+    // Older leads (before CR-006) have no location or links; those keys are left out.
+    ...(row.location ? { location: row.location } : {}),
+    ...(row.links && row.links.length ? { links: row.links } : {}),
     consent: row.consent,
     submitted_at: new Date(row.created_at).toISOString(),
   });
@@ -308,11 +339,12 @@ app.post(
     let row;
     try {
       const result = await pool.query(
-        `INSERT INTO leads (submission_id, name, business_type, contact_method, email, phone, message, consent, source)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `INSERT INTO leads (submission_id, name, business_type, contact_method, email, phone, location, links,
+                            message, consent, source)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          RETURNING *`,
         [`ms_${crypto.randomUUID().replace(/-/g, "")}`, lead.name, lead.businessType, lead.contactMethod,
-          lead.email, lead.phone, lead.message, lead.consent, lead.source]
+          lead.email, lead.phone, lead.location, JSON.stringify(lead.links), lead.message, lead.consent, lead.source]
       );
       row = result.rows[0];
     } catch (err) {
@@ -500,7 +532,7 @@ app.post("/api/admin/logout", adminJson, (req, res) => {
   res.json({ loggedIn: false });
 });
 
-const LEAD_COLUMNS = `id, name, business_type, contact_method, email, phone, message, consent, source,
+const LEAD_COLUMNS = `id, name, business_type, contact_method, email, phone, location, links, message, consent, source,
   status, response_note, created_at, responded_at, forwarded, forwarded_at, forward_rejected, forward_attempts`;
 const LEAD_FILTERS = {
   all: "TRUE",
