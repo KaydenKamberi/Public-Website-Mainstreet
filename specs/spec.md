@@ -2,7 +2,7 @@
 
 ## Specification Status
 
-`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions. Updated 2026-10-08 by CR-003: wording for all business types, slimmer footer with payment methods, closing band refresh. Updated 2026-10-08 by CR-002: design polish, custom section images, concept sites, work wall, reviews section (hidden until real reviews), 404 page.
+`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions. Updated 2026-10-08 by CR-003: wording for all business types, slimmer footer with payment methods, closing band refresh. Updated 2026-10-08 by CR-002: design polish, custom section images, concept sites, work wall, reviews section (hidden until real reviews), 404 page. Updated 2026-10-09 by CR-006 (location and links on the contact form, matching the hub's intake contract v2), CR-007 (business phone number), and CR-008 ("Send again" and the hub's answers in the admin).
 
 This document defines the requirements for this student's business website.
 
@@ -13,7 +13,7 @@ Business facts must come from the approved `business-brief.md` or later student 
 ### Conflicts and Scope Notes
 
 - **Real business, student decision.** The student has decided this site is for the real Mainstreet Sites SD business and does not need teacher approval. The following requirements differ from the class `constitution.md`. If this spec is also submitted for the class project, the student must resolve these conflicts with the class rules:
-  - Section 8: the contact form collects more than name, email, and message (adds phone, business type, and consent).
+  - Section 8: the contact form collects more than name, email, and message (adds phone, business type, location, links, and consent).
   - Section 17: the site collects real customer contact information, not simulated data.
   - Section 18: the site uses outside services to send emails and texts automatically.
   - Section 3 and 11: the site adds a fifth public page, Privacy Policy (`privacy.html`).
@@ -134,7 +134,7 @@ The logo in the header links to Home. Under 1024 px, navigation collapses into a
 - Service area: "Serving all of San Diego"
 - Availability: "Weekends, and weekdays 6:00 pm to 8:00 pm"
 - Email: mainstreetsitessd@gmail.com (decided)
-- Phone for texts: `[NEEDS CONTENT: business phone number (planned: a free Google Voice number that rings both Kevin and Kayden and forwards texts to the business email)]`
+- Phone for texts: (619) 786-7135, shown as "Text (619) 786-7135" and linked as `sms:+16197867135` (CR-007; the business Google Voice number, rings Kevin and Kayden and forwards texts)
 - Links: Home, Offerings, About, Contact, Privacy Policy
 - Copyright line with the current year and business name
 - Payment methods: "We accept" with Venmo and Cash badges (CR-003)
@@ -156,7 +156,7 @@ Buttons appear **only** in these spots. No other buttons anywhere.
 | Home hero, under the lead text | Primary "Get My Info Doc →" + secondary "See What's Included" side by side (stacked at equal full width on phones under 768 px). Under them, one small line: "$60 the first month, then $45 a month." followed by a text link "See full pricing" (to Offerings). |
 | Offerings, bottom of the package card | Primary "Get Started →" (to Contact) |
 | Bottom of Home, Offerings, and About | The same closing band: a short heading, one sentence, and one primary "Get My Info Doc →" button (button on the right on desktop, under a marigold awning stripe) |
-| Contact page | Form submit button "Send Message". Under the form: text links "Email us" and "Text us" once the real email and phone exist. |
+| Contact page | Form submit button "Send Message". Under the form: text links "Email us" (`mailto:`) and "Text us" (`sms:+16197867135`, CR-007). |
 | Phones only (under 768 px) | A sticky bottom bar with one "Get My Info Doc →" button. It appears only after the visitor scrolls past the hero and never appears on the Contact page. |
 
 Rules:
@@ -389,21 +389,23 @@ Want a website for your business? Tell us what kind of business you have, and we
 
 ## Contact Form
 
-Fields:
+Fields, in this order:
 
 - Name (required)
 - Business type (required): a dropdown with these options, in this order: Restaurant, HVAC, Barbershop, Car detailing, Gym / martial arts studio, Lash studio, House cleaning service, Bakery, Tattoo shop, Other (special request)
 - "Send my info document by" (required): choose **one**: Email or Text
 - Email (shown and required only when Email is chosen)
 - Phone number (shown and required only when Text is chosen)
-- Message (optional). Placeholder: "Your business's name and anything you'd like us to know"
+- "Where is your business?" (required, up to 120 characters). Hint: "City, neighborhood, or address." (CR-006)
+- "Links to your business online" (optional). One box to start, plus an "Add another link" text link (not a button), up to 5 boxes, each up to 500 characters; empty boxes are left out. Hint: "Your Google Maps listing, website, Instagram, or Facebook. An @handle works too." (CR-006)
+- "Anything you want us to know that isn't online?" (optional, up to 2,000 characters; sent to the hub as `message`). Hint: "Like your catering menu, new prices, or your story. We find the rest on Google." No placeholder. (CR-006)
 - Consent checkbox (required): "I agree to receive my info document and follow-up messages from Mainstreet Sites SD by email or text. See our Privacy Policy." "Privacy Policy" links to `privacy.html`. Required by law before sending automated texts.
 
-The visitor gives only one contact method. No address or payment fields.
+The visitor gives only one contact method. No payment fields. Nothing else on the form asks for menus, prices, hours, or other things the team can find online (CR-006).
 
 ### Automatic info document
 
-- Every successful submission is saved in this site's database as a backup and immediately sent to the private team hub (`POST /api/intake/website`, signed with the shared secret `INTAKE_SECRET` from Replit Secrets). If the hub can't be reached, this site retries every 5 minutes for 24 hours.
+- Every successful submission is saved in this site's database as a backup and immediately sent to the private team hub (`POST /api/intake/website`, signed with the shared secret `INTAKE_SECRET` from Replit Secrets). The request also carries `location` and, only when there are any, `links` (sent exactly as typed; the hub adds `https://` and keeps @handles as text) (CR-006). If the hub can't be reached, this site retries every 5 minutes for 24 hours, then once an hour until it gets through. A lead the hub refuses as invalid (400) is not retried (CR-008).
 - Within 5 minutes of a successful submission, the team hub sends the info document that matches the chosen business type.
 - Email choice: the document is sent by email from the business Gmail.
 - Text choice: the document is sent by text as a link, through Twilio. **Before Twilio is added (decided):** the Text option stays. The hub marks the lead "Text by hand" and sends a push notification, and Kevin or Kayden texts the info doc link from the business number within 24 hours.
@@ -429,9 +431,9 @@ The existing client information guide was written for trade workers and must be 
 ## Direct Contact Method
 
 - Email: mainstreetsitessd@gmail.com (decided)
-- Text: `[NEEDS CONTENT: business phone number (planned: a free Google Voice number that rings both Kevin and Kayden and forwards texts to the business email)]`
+- Text: (619) 786-7135 (`sms:+16197867135`, CR-007)
 
-Both appear below the form once provided. Until then, show neither; do not display placeholder numbers such as 555 numbers.
+Both appear below the form as text links ("Email us", "Text us"). Never display placeholder numbers such as 555 numbers.
 
 ## Response Expectation
 
@@ -451,9 +453,9 @@ Send Message
 ## Acceptance Criteria
 
 - Contact form can be completed.
-- Required fields are validated: an empty Name, no business type, no delivery choice, no consent, or an empty Email or Phone (whichever was chosen) prevents submission and shows a message next to the field.
+- Required fields are validated: an empty Name, no business type, an empty "Where is your business?", no delivery choice, no consent, or an empty Email or Phone (whichever was chosen) prevents submission and shows a message next to the field.
 - Choosing Email shows only the Email field; choosing Text shows only the Phone field.
-- Email must be a valid email format. Phone must be a valid U.S. phone number.
+- Email must be a valid email format. Phone must be a valid U.S. phone number. Location is at most 120 characters; at most 5 links, each at most 500 characters. The server checks all of this again and never sends the hub a lead it would refuse (CR-006).
 - Choosing "Other (special request)" sends no document and marks the lead "Special request".
 - Submitting with an email and business type "Restaurant" sends the Restaurant info document to that email within 5 minutes.
 - Once Twilio is added, choosing Text sends a text with a link to the matching info document within 5 minutes.
@@ -464,7 +466,7 @@ Send Message
 - Successful submission creates a persistent lead.
 - The saved lead includes the visitor's `utm_source` (or `direct`).
 - Visitor receives clear success or error feedback. Success text: "Thanks! Your message was sent." Error text explains the submission failed and asks the visitor to try again.
-- The form collects only name, email, phone, business type, message, and consent.
+- The form collects only name, email, phone, business type, location, links, message, and consent.
 - Service area and availability appear on the page.
 - No placeholder phone number appears.
 
@@ -482,7 +484,7 @@ Tell visitors exactly what information the contact form collects, why, and how t
 
 ## Draft Wording
 
-**What we collect.** When you fill out our contact form, we collect your name, your type of business, your email address or phone number (whichever you choose), your message if you write one, and your consent to be contacted.
+**What we collect.** When you fill out our contact form, we collect your name, your type of business, where your business is, any links you share, your email address or phone number (whichever you choose), your message if you write one, and your consent to be contacted.
 
 **Why we collect it.** To send you the info document for your type of business, and to contact you about our website services.
 
@@ -498,7 +500,7 @@ Tell visitors exactly what information the contact form collects, why, and how t
 
 **Your choices.** You can ask us to delete your information at any time by contacting us.
 
-**Contact.** Email: mainstreetsitessd@gmail.com · Text: `[NEEDS CONTENT: business phone number (planned: a free Google Voice number that rings both Kevin and Kayden and forwards texts to the business email)]`
+**Contact.** Email: mainstreetsitessd@gmail.com · Text: (619) 786-7135
 
 This wording is a starting point, not legal advice. The student may want a parent or adult to review it.
 
@@ -506,7 +508,7 @@ This wording is a starting point, not legal advice. The student may want a paren
 
 - The Privacy Policy link appears in the footer of every page and opens `privacy.html`.
 - The consent checkbox text links to `privacy.html`.
-- The page lists exactly the fields the contact form collects: name, business type, email or phone, message, consent.
+- The page lists exactly the fields the contact form collects: name, business type, location, links, email or phone, message, consent.
 - The page includes the STOP and HELP texting instructions.
 - The page states information is not sold or shared, and that texting consent is not shared with third parties.
 - No claims appear beyond the draft wording above.
@@ -516,9 +518,11 @@ This wording is a starting point, not legal advice. The student may want a paren
 ## Student-Specific Requirements
 
 - The admin page lists leads newest first.
-- Each lead shows name, email, phone, business type, message, consent, source, submission date and time, status, response note, and whether it reached the team hub (yes / not yet / refused, with the time). Info document status lives in the team hub, which sends the documents (CR-004 D2).
+- Each lead shows name, email, phone, business type, location, links (only real `http(s)` addresses are clickable, opening in a new tab; @handles show as text), message, consent, source, submission date and time, status, response note, and whether it reached the team hub (yes / not yet / refused, with the time), and the hub's last answer for leads that haven't reached it (CR-008). Info document status lives in the team hub, which sends the documents (CR-004 D2).
 - Resending an info document happens in the team hub (CR-004 D2). The admin can delete this site's copy of a lead, with a confirm step, when someone asks for their information to be deleted (CR-004 D6).
 - Status options: `new` and `responded`. Filters: All, New, Responded, Not in the hub yet.
+- "Send again" (CR-008): every lead not in the hub yet has a **Send again** button that sends it to the hub right away (fresh timestamp and signature, same body and `submission_id`; a `200` with `"duplicate": true` counts as delivered). The **Not in the hub yet** filter has a **Send all again** button that sends every stuck lead one at a time, staying under the hub's limit of 60 per 15 minutes.
+- The hub's last answer (CR-008) is saved on each lead (`forward_last_answer`: the status code and the hub's short `error` text, never a secret) and shown on the card: 400 shows the hub's reason; 401 "Hub rejected the signature: check INTAKE_SECRET matches in both apps"; 403 "Hub address must start with https://, check HUB_URL"; 503 "The hub's INTAKE_SECRET isn't set yet"; 429, other errors, and no answer are shown as they are.
 - Login: one shared team password from the Replit Secret `ADMIN_PASSWORD`; a signed 12-hour session cookie; logins pause for 15 minutes after 5 wrong tries; the admin stays locked if the secret is not set (CR-004 D3).
 - Hidden from outsiders (CR-005): `/admin`, `/admin.html`, `/admin.js`, and `/api/admin/*` answer exactly like a missing page unless the device has been marked as a team device by opening the private team link `/team/<ADMIN_ACCESS_KEY>` (Replit Secret) once. The mark is a signed cookie that lasts 180 days. Changing `ADMIN_ACCESS_KEY` unmarks every device. Wrong team links show "Page not found", and after 5 wrong tries in 15 minutes a connection stops being checked. If `ADMIN_ACCESS_KEY` is not set, the admin is completely hidden. The team password is still required on team devices.
 - Marking a lead `responded` records the responded date and time.
@@ -591,8 +595,7 @@ Unresolved items may remain during planning but must be resolved before the phas
 
 - mainstreetsitessd@gmail.com
   - Must be resolved before: Phase 2
-- `[NEEDS CONTENT: business phone number (planned: a free Google Voice number that rings both Kevin and Kayden and forwards texts to the business email)]`
-  - Must be resolved before: Phase 2
+- ~~Business phone number~~: resolved by CR-007: (619) 786-7135.
 - `[NEEDS CONTENT: student approval of the 9 drafted info documents, including each non-restaurant "Your website will include" list]`
   - Must be resolved before: Phase 4
 - `[NEEDS CONTENT: Privacy Policy effective date, set at launch]`
