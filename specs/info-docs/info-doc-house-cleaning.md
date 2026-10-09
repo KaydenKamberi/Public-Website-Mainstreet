@@ -101,7 +101,7 @@ Optional sections like offers and badges only appear if they're true for your bu
 Reply to this message, or reach us at:
 
 - Email: mainstreetsitessd@gmail.com
-- Text: [NEEDS CONTENT: business phone number]
+- Text: (619) 786-7135
 
 We're available on weekends, and weekdays from 6:00 to 8:00 pm.
 

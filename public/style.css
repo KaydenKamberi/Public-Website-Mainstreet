@@ -1061,6 +1061,17 @@ main:has(> .closing-band:last-child) + .site-footer {
   min-height: 44px;
 }
 
+/* CR-007: Privacy Policy contact lines, 44px tap targets */
+.contact-line {
+  margin: 0;
+}
+
+.contact-line a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
 .contact-form {
   max-width: 560px;
   margin-bottom: var(--space-6);
@@ -1160,6 +1171,39 @@ main:has(> .closing-band:last-child) + .site-footer {
   color: var(--color-marigold-deep);
   font-size: var(--text-small);
   font-weight: var(--weight-display-strong);
+}
+
+/* CR-006: field hints, link boxes, and the "Add another link" text link */
+.field-hint {
+  margin: calc(var(--space-1) * -1) 0 var(--space-2);
+  color: var(--color-subtle);
+  font-size: var(--text-small);
+}
+
+.link-boxes {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.add-field-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-forest);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.add-field-link:hover {
+  color: var(--color-marigold-deep);
+}
+
+.add-field-link[hidden] {
+  display: none;
 }
 
 .honeypot {
@@ -1555,7 +1599,13 @@ main:has(> .closing-band:last-child) + .site-footer {
 .badge-warn { background: var(--color-danger-soft); color: var(--color-danger); }
 .lead-facts { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-1) var(--space-4); margin: var(--space-4) 0; }
 .lead-facts dt { color: var(--color-subtle); font-size: var(--text-small); }
-.lead-facts dd { margin: 0; }
+.lead-facts dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.lead-links { margin: 0; padding: 0; list-style: none; }
+.hub-answer { max-width: none; margin: var(--space-2) 0 0; color: var(--color-body); }
+.send-all { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin: 0 0 var(--space-4); }
+.send-all[hidden] { display: none; }
+.send-all p { margin: 0; }
+.lead-links li { max-width: none; }
 .lead-facts .badge { white-space: normal; }
 .lead-message { max-width: none; padding: var(--space-3) var(--space-4); border-radius: var(--radius-field); background: var(--color-cream); white-space: pre-wrap; overflow-wrap: anywhere; }
 .lead-actions { display: grid; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--color-line-soft); }

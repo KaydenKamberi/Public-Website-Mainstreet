@@ -52,6 +52,13 @@ const SCHEMA = `
   ALTER TABLE leads ADD COLUMN IF NOT EXISTS forward_rejected BOOLEAN NOT NULL DEFAULT false;
   UPDATE leads SET submission_id = 'ms_' || replace(gen_random_uuid()::text, '-', '')
    WHERE submission_id IS NULL;
+
+  -- CR-006 (hub intake contract v2): where the business is, and links to it online.
+  ALTER TABLE leads ADD COLUMN IF NOT EXISTS location TEXT;
+  ALTER TABLE leads ADD COLUMN IF NOT EXISTS links JSONB NOT NULL DEFAULT '[]'::jsonb;
+
+  -- CR-008: the hub's last answer for each lead ({ status, error, duplicate, at }), shown in the admin.
+  ALTER TABLE leads ADD COLUMN IF NOT EXISTS forward_last_answer JSONB;
 `;
 
 async function initDatabase() {
@@ -81,6 +88,11 @@ const HUB_BUSINESS_TYPES = {
 const BUSINESS_TYPES = Object.keys(HUB_BUSINESS_TYPES);
 const SPECIAL_REQUEST = "Other (special request)";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const LOCATION_MAX = 120;
+const LINKS_MAX = 5;
+const LINK_MAX = 500;
+// Keeps the signed request to the hub well under its 20 KB limit.
+const HUB_TEXT_BYTES_MAX = 16 * 1024;
 
 const MESSAGES = {
   sent: "Thanks! Your message was sent.",
@@ -105,6 +117,8 @@ function validateLead(body) {
     contactMethod: text(body.contactMethod, 10),
     email: null,
     phone: null,
+    location: typeof body.location === "string" ? body.location.trim() : "",
+    links: [],
     message: text(body.message, 2000) || null,
     consent: body.consent === true || body.consent === "yes",
     source: text(body.source, 100).toLowerCase() || "direct",
@@ -112,6 +126,20 @@ function validateLead(body) {
 
   if (!lead.name) errors.name = "Name is required.";
   if (!BUSINESS_TYPES.includes(lead.businessType)) errors.businessType = "Choose a business type.";
+  if (!lead.location || lead.location.length > LOCATION_MAX) {
+    errors.location = `Location is required, up to ${LOCATION_MAX} characters.`;
+  }
+
+  // One link arrives as a string (plain form post), several as a list. Empty boxes are dropped.
+  const rawLinks = body.links === undefined ? [] : [].concat(body.links);
+  if (rawLinks.some((link) => typeof link !== "string")) {
+    errors.links = "Links must be text.";
+  } else {
+    lead.links = rawLinks.map((link) => link.trim()).filter(Boolean);
+    if (lead.links.length > LINKS_MAX || lead.links.some((link) => link.length > LINK_MAX)) {
+      errors.links = `Up to ${LINKS_MAX} links, each up to ${LINK_MAX} characters.`;
+    }
+  }
   if (lead.contactMethod === "email") {
     const email = text(body.email, 254);
     if (EMAIL_PATTERN.test(email)) lead.email = email;
@@ -124,6 +152,9 @@ function validateLead(body) {
   }
   if (!lead.consent) errors.consent = "Consent is required.";
 
+  const textBytes = Buffer.byteLength(JSON.stringify([lead.name, lead.location, lead.links, lead.message]));
+  if (textBytes > HUB_TEXT_BYTES_MAX) errors.message = "The form is too long.";
+
   return { lead, errors };
 }
 
@@ -131,7 +162,9 @@ function validateLead(body) {
 // Follows the team hub's specs/intake-contract.md: each lead is POSTed to
 // HUB_URL + /api/intake/website, signed with INTAKE_SECRET as
 // X-Intake-Signature: sha256=<hex HMAC-SHA256 of "<timestamp>.<body>">.
-// 200/201 = received, 400 = refused (stop retrying, keep the copy), anything else = retry.
+// 200/201 = received (200 may say "duplicate": true), 400 = refused (stop retrying, keep the copy),
+// anything else (401, 403, 429, 503, other errors, no answer) = retry. The answer is saved on the
+// lead so the admin can show why it is stuck (CR-008).
 
 function hubIntakeUrl() {
   if (!process.env.HUB_URL) return null;
@@ -147,8 +180,22 @@ const HUB_INTAKE_URL = hubIntakeUrl();
 const INTAKE_SECRET = process.env.INTAKE_SECRET || null;
 const RETRY_EVERY_MS = 5 * 60 * 1000;
 
+// Retries and "Send all again" send at most this many leads per 15 minutes, under the hub's
+// limit of 60. New form submissions always go right away.
+const HUB_BATCH_LIMIT = 50;
+const HUB_WINDOW_MS = 15 * 60 * 1000;
+const hubSends = []; // times of recent sends, kept in memory only
+
+function hubBudgetLeft() {
+  const since = Date.now() - HUB_WINDOW_MS;
+  while (hubSends.length && hubSends[0] < since) hubSends.shift();
+  return HUB_BATCH_LIMIT - hubSends.length;
+}
+
+// Each call signs the same body again with a fresh timestamp, so a resend is safe:
+// the hub saves each submission_id once.
 async function forwardLead(row) {
-  if (!HUB_INTAKE_URL || !INTAKE_SECRET) return false;
+  if (!HUB_INTAKE_URL || !INTAKE_SECRET) return { ok: false, rejected: false, answer: null };
 
   const body = JSON.stringify({
     submission_id: row.submission_id,
@@ -158,6 +205,9 @@ async function forwardLead(row) {
     email: row.email,
     phone: row.phone,
     message: row.message,
+    // Older leads (before CR-006) have no location or links; those keys are left out.
+    ...(row.location ? { location: row.location } : {}),
+    ...(row.links && row.links.length ? { links: row.links } : {}),
     consent: row.consent,
     submitted_at: new Date(row.created_at).toISOString(),
   });
@@ -168,6 +218,8 @@ async function forwardLead(row) {
 
   let ok = false;
   let rejected = false;
+  let answer;
+  hubSends.push(Date.now());
   try {
     const response = await fetch(HUB_INTAKE_URL, {
       method: "POST",
@@ -181,46 +233,85 @@ async function forwardLead(row) {
     });
     ok = response.status === 200 || response.status === 201;
     rejected = response.status === 400;
-    if (!ok) {
-      const detail = await response.text().catch(() => "");
-      console.warn(`Hub answered HTTP ${response.status} for lead ${row.id}: ${detail.slice(0, 200)}`);
+    const detail = await response.text().catch(() => "");
+    let data = {};
+    try {
+      data = JSON.parse(detail) || {};
+    } catch (err) {
+      // Not JSON (for example a proxy error page): only the status code is kept.
     }
+    answer = {
+      status: response.status,
+      error: !ok && typeof data.error === "string" ? data.error.slice(0, 200) : null,
+      duplicate: data.duplicate === true,
+    };
+    if (!ok) console.warn(`Hub answered HTTP ${response.status} for lead ${row.id}: ${detail.slice(0, 200)}`);
   } catch (err) {
-    console.warn(`Hub unreachable for lead ${row.id}: ${err.message}`);
+    const reason = err.name === "TimeoutError" ? "timed out after 10 seconds" : (err.cause && err.cause.code) || err.message;
+    answer = { status: null, error: String(reason).slice(0, 200), duplicate: false };
+    console.warn(`Hub unreachable for lead ${row.id}: ${reason}`);
   }
+  answer.at = new Date().toISOString();
 
   await pool.query(
     `UPDATE leads
         SET forward_attempts = forward_attempts + 1,
             forwarded = $2,
             forwarded_at = CASE WHEN $2 THEN now() ELSE forwarded_at END,
-            forward_rejected = $3
+            forward_rejected = $3,
+            forward_last_answer = $4
       WHERE id = $1`,
-    [row.id, ok, rejected]
+    [row.id, ok, rejected, JSON.stringify(answer)]
   );
-  return ok;
+  return { ok, rejected, answer };
 }
 
-// Retries leads that have not reached the hub, for up to 24 hours after submission.
+// Sends leads one at a time. Stops early when the hub isn't taking leads right now
+// (no answer, 401, 403, 429, 503, ...), since the rest would fail the same way.
+async function sendBatch(rows) {
+  const result = { delivered: 0, refused: 0, left: rows.length, stoppedBy: null };
+  for (const row of rows) {
+    if (hubBudgetLeft() <= 0) {
+      result.stoppedBy = { limit: true };
+      break;
+    }
+    const { ok, rejected, answer } = await forwardLead(row);
+    result.left -= 1;
+    if (ok) result.delivered += 1;
+    else if (rejected) result.refused += 1;
+    else {
+      result.stoppedBy = answer;
+      break;
+    }
+  }
+  return result;
+}
+
+// Retries leads that have not reached the hub: every 5 minutes for their first 24 hours,
+// then once an hour until they get through (CR-008). Leads the hub refused (400) are not retried.
 // Leads younger than a minute are skipped: their first send may still be in progress.
-let retrying = false;
+let sendingBatch = false;
+let retryRuns = 0;
 async function retryUnforwarded() {
-  if (!pool || !HUB_INTAKE_URL || !INTAKE_SECRET || retrying) return;
-  retrying = true;
+  if (!pool || !HUB_INTAKE_URL || !INTAKE_SECRET || sendingBatch) return;
+  const includeOlder = retryRuns % 12 === 0; // every 12th 5-minute run = once an hour
+  retryRuns += 1;
+  sendingBatch = true;
   try {
     const { rows } = await pool.query(
       `SELECT * FROM leads
         WHERE forwarded = false
           AND forward_rejected = false
-          AND created_at > now() - interval '24 hours'
           AND created_at < now() - interval '1 minute'
-        ORDER BY created_at`
+          AND ($1 OR created_at > now() - interval '24 hours')
+        ORDER BY created_at`,
+      [includeOlder]
     );
-    for (const row of rows) await forwardLead(row);
+    await sendBatch(rows);
   } catch (err) {
     console.error("Hub retry failed:", err.message);
   } finally {
-    retrying = false;
+    sendingBatch = false;
   }
 }
 
@@ -308,11 +399,12 @@ app.post(
     let row;
     try {
       const result = await pool.query(
-        `INSERT INTO leads (submission_id, name, business_type, contact_method, email, phone, message, consent, source)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `INSERT INTO leads (submission_id, name, business_type, contact_method, email, phone, location, links,
+                            message, consent, source)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          RETURNING *`,
         [`ms_${crypto.randomUUID().replace(/-/g, "")}`, lead.name, lead.businessType, lead.contactMethod,
-          lead.email, lead.phone, lead.message, lead.consent, lead.source]
+          lead.email, lead.phone, lead.location, JSON.stringify(lead.links), lead.message, lead.consent, lead.source]
       );
       row = result.rows[0];
     } catch (err) {
@@ -500,8 +592,9 @@ app.post("/api/admin/logout", adminJson, (req, res) => {
   res.json({ loggedIn: false });
 });
 
-const LEAD_COLUMNS = `id, name, business_type, contact_method, email, phone, message, consent, source,
-  status, response_note, created_at, responded_at, forwarded, forwarded_at, forward_rejected, forward_attempts`;
+const LEAD_COLUMNS = `id, name, business_type, contact_method, email, phone, location, links, message, consent, source,
+  status, response_note, created_at, responded_at, forwarded, forwarded_at, forward_rejected, forward_attempts,
+  forward_last_answer`;
 const LEAD_FILTERS = {
   all: "TRUE",
   new: "status = 'new'",
@@ -568,6 +661,44 @@ app.delete("/api/admin/leads/:id", requireAdmin, async (req, res) => {
   } catch (err) {
     console.error("Deleting lead failed:", err.message);
     res.status(500).json({ error: "delete failed" });
+  }
+});
+
+// "Send again" (CR-008): sends one lead to the hub now. Works on any lead not in the hub yet,
+// including one the hub refused (for example after the hub fixes a check).
+app.post("/api/admin/leads/:id/forward", requireAdmin, adminJson, async (req, res) => {
+  const id = leadId(req);
+  if (!id || !pool) return res.status(400).json({ error: "bad request" });
+  if (!HUB_INTAKE_URL || !INTAKE_SECRET) return res.status(503).json({ error: "hub not set up" });
+  if (hubBudgetLeft() <= 0) return res.status(429).json({ error: "hub limit" });
+  try {
+    const { rows } = await pool.query("SELECT * FROM leads WHERE id = $1", [id]);
+    if (!rows.length) return res.status(404).json({ error: "not found" });
+    if (!rows[0].forwarded) await forwardLead(rows[0]);
+    const updated = await pool.query(`SELECT ${LEAD_COLUMNS} FROM leads WHERE id = $1`, [id]);
+    res.json({ lead: updated.rows[0] });
+  } catch (err) {
+    console.error("Sending lead again failed:", err.message);
+    res.status(500).json({ error: "send failed" });
+  }
+});
+
+// "Send all again" (CR-008): every lead not in the hub yet, except ones the hub refused.
+app.post("/api/admin/leads/forward-all", requireAdmin, adminJson, async (req, res) => {
+  if (!pool) return res.status(400).json({ error: "bad request" });
+  if (!HUB_INTAKE_URL || !INTAKE_SECRET) return res.status(503).json({ error: "hub not set up" });
+  if (sendingBatch) return res.status(409).json({ error: "already sending" });
+  sendingBatch = true;
+  try {
+    const { rows } = await pool.query(
+      "SELECT * FROM leads WHERE forwarded = false AND forward_rejected = false ORDER BY created_at"
+    );
+    res.json(await sendBatch(rows));
+  } catch (err) {
+    console.error("Sending all again failed:", err.message);
+    res.status(500).json({ error: "send failed" });
+  } finally {
+    sendingBatch = false;
   }
 });
 

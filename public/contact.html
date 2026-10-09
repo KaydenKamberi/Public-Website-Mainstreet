@@ -76,6 +76,23 @@
               <p class="field-error" id="business-type-error" hidden></p>
             </div>
 
+            <div class="field">
+              <label for="location">Where is your business?</label>
+              <p class="field-hint" id="location-hint">City, neighborhood, or address.</p>
+              <input id="location" name="location" type="text" maxlength="120" required aria-describedby="location-hint location-error">
+              <p class="field-error" id="location-error" hidden></p>
+            </div>
+
+            <fieldset class="field" aria-describedby="links-hint links-error">
+              <legend>Links to your business online <span class="optional">(optional)</span></legend>
+              <p class="field-hint" id="links-hint">Your Google Maps listing, website, Instagram, or Facebook. An @handle works too.</p>
+              <div class="link-boxes" data-link-boxes>
+                <input name="links" type="text" inputmode="url" autocapitalize="off" spellcheck="false" maxlength="500" aria-label="Link 1">
+              </div>
+              <button class="add-field-link" type="button" data-add-link hidden>Add another link</button>
+              <p class="field-error" id="links-error" hidden></p>
+            </fieldset>
+
             <fieldset class="field" aria-describedby="contact-method-error">
               <legend>Send my info document by</legend>
               <div class="choice-row">
@@ -98,8 +115,9 @@
             </div>
 
             <div class="field">
-              <label for="message">Message <span class="optional">(optional)</span></label>
-              <textarea id="message" name="message" rows="4" maxlength="2000" placeholder="Your business's name and anything you'd like us to know"></textarea>
+              <label for="message">Anything you want us to know that isn't online? <span class="optional">(optional)</span></label>
+              <p class="field-hint" id="message-hint">Like your catering menu, new prices, or your story. We find the rest on Google.</p>
+              <textarea id="message" name="message" rows="4" maxlength="2000" aria-describedby="message-hint"></textarea>
             </div>
 
             <div class="field honeypot" aria-hidden="true">
@@ -121,7 +139,7 @@
           <p>Kevin or Kayden will personally reply within 24 hours.</p>
           <ul class="contact-links">
             <li><a href="mailto:mainstreetsitessd@gmail.com">Email us</a></li>
-            <!-- [NEEDS CONTENT: business phone number] Add a "Text us" sms: link here once it exists. -->
+            <li><a href="sms:+16197867135">Text us</a></li>
           </ul>
         </div>
         <aside class="contact-side">
@@ -156,7 +174,7 @@
           <li>Serving all of San Diego</li>
           <li>Weekends, and weekdays 6:00 pm to 8:00 pm</li>
           <li><a href="mailto:mainstreetsitessd@gmail.com">mainstreetsitessd@gmail.com</a></li>
-          <!-- [NEEDS CONTENT: business phone number] Add an sms: link here once it exists. -->
+          <li><a href="sms:+16197867135">Text (619) 786-7135</a></li>
         </ul>
       </div>
       <nav class="footer-nav" aria-label="Footer">
