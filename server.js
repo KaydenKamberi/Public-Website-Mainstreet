@@ -121,7 +121,8 @@ function validateLead(body) {
     links: [],
     message: text(body.message, 2000) || null,
     consent: body.consent === true || body.consent === "yes",
-    source: text(body.source, 100).toLowerCase() || "direct",
+    // Same cleaning as visits, so the dashboard matches leads to visits by source.
+    source: cleanSource(body.source),
   };
 
   if (!lead.name) errors.name = "Name is required.";
@@ -321,6 +322,16 @@ const app = express();
 // address (used only in memory for rate limits) and req.secure accurate.
 app.set("trust proxy", 1);
 
+// Basic security headers on every response (no extra packages): no MIME sniffing, and
+// don't announce the server software. Public pages may be framed (Replit's preview pane
+// shows the site in a frame); the admin blocks framing in its own policy below.
+app.disable("x-powered-by");
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
+
 // ---------- Visits (CR-004) ----------
 // One visit per browser session: source + page only. No IP, name, or device
 // info is stored. Bots that identify themselves are skipped.
@@ -343,6 +354,7 @@ function underLimit(map, key, limit, windowMs) {
 setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of visitCounts) if (entry.resetAt < now) visitCounts.delete(key);
+  for (const [key, entry] of leadCounts) if (entry.resetAt < now) leadCounts.delete(key);
   for (const [key, entry] of loginFailures) if (entry.resetAt < now) loginFailures.delete(key);
 }, 60 * 1000).unref();
 
@@ -376,6 +388,12 @@ app.use("/api/visits", (err, req, res, next) => {
   res.status(204).end();
 });
 
+// Real visitors send the form once; a flood from one connection would fill the database
+// and use up the hub's limit of 60 per 15 minutes, delaying real leads.
+const LEADS_PER_WINDOW = 5;
+const LEAD_WINDOW_MS = 15 * 60 * 1000;
+const leadCounts = new Map(); // address -> { count, resetAt }, kept in memory only
+
 app.post(
   "/api/leads",
   express.json({ limit: "10kb" }),
@@ -389,6 +407,9 @@ app.post(
 
     // Hidden "website" field: people leave it empty, spam bots fill it in.
     if (text(body.website, 200)) return reply(200, MESSAGES.sent);
+    if (!underLimit(leadCounts, req.ip, LEADS_PER_WINDOW, LEAD_WINDOW_MS)) {
+      return reply(429, MESSAGES.failed, { error: "too many" });
+    }
 
     const { lead, errors } = validateLead(body);
     if (Object.keys(errors).length) {
@@ -490,7 +511,15 @@ app.use((req, res, next) => {
   }
   const adminRequest = /^\/admin(\.html|\.js)?\/?$/.test(clean) || clean.startsWith("/api/admin");
   if (adminRequest && !isTeamDevice(req)) return sendNotFound(req, res);
-  if (adminRequest) res.setHeader("Referrer-Policy", "no-referrer");
+  if (adminRequest) {
+    res.setHeader("Referrer-Policy", "no-referrer");
+    // The admin shows what visitors typed, so it only runs its own script and styles.
+    res.setHeader("Content-Security-Policy", [
+      "default-src 'self'", "script-src 'self'", "style-src 'self' https://fonts.googleapis.com",
+      "font-src https://fonts.gstatic.com", "img-src 'self' data:", "connect-src 'self'",
+      "object-src 'none'", "base-uri 'none'", "form-action 'self'", "frame-ancestors 'none'",
+    ].join("; "));
+  }
   next();
 });
 
@@ -609,7 +638,8 @@ function leadId(req) {
 
 app.get("/api/admin/leads", requireAdmin, async (req, res) => {
   if (!pool) return res.status(503).json({ error: "database not configured" });
-  const where = LEAD_FILTERS[req.query.filter] || LEAD_FILTERS.all;
+  // Own keys only: "?filter=__proto__" or "constructor" falls back to All instead of a broken query.
+  const where = Object.hasOwn(LEAD_FILTERS, req.query.filter) ? LEAD_FILTERS[req.query.filter] : LEAD_FILTERS.all;
   try {
     const { rows } = await pool.query(
       `SELECT ${LEAD_COLUMNS} FROM leads WHERE ${where} ORDER BY created_at DESC LIMIT 500`
@@ -746,11 +776,12 @@ app.get("/api/health", async (req, res) => {
 });
 
 // Lets /offerings serve offerings.html, so links work with or without ".html".
-// "/contact/" works like "/contact" (CR-002 D15). Leading slashes are collapsed
-// so a path like "//example.com/" can never redirect to another site.
+// "/contact/" works like "/contact" (CR-002 D15). Leading slashes and backslashes are
+// collapsed so a path like "//example.com/" or "/\example.com/" can never redirect to
+// another site (browsers read "/\" in a redirect like "//").
 app.use((req, res, next) => {
   if (req.path.length > 1 && req.path.endsWith("/") && !req.path.startsWith("/api/")) {
-    const clean = "/" + req.path.replace(/^\/+/, "").replace(/\/+$/, "");
+    const clean = "/" + req.path.replace(/^[\/\\]+/, "").replace(/\/+$/, "");
     return res.redirect(301, clean + req.url.slice(req.path.length));
   }
   next();
@@ -759,6 +790,17 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"] }));
 
 app.use(sendNotFound);
+
+// Last stop for unexpected errors (for example a broken JSON body on an admin request):
+// a short plain answer, never Express's default page with the stack trace.
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  const status = err.status >= 400 && err.status < 500 ? err.status : 500;
+  if (status === 500) console.error("Request failed:", err.message);
+  const message = status === 500 ? "server error" : "bad request";
+  if (req.path.startsWith("/api/")) return res.status(status).json({ error: message });
+  res.status(status).type("text").send(message);
+});
 
 initDatabase()
   .catch((err) => {
