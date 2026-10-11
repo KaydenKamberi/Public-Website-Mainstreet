@@ -353,6 +353,7 @@ function underLimit(map, key, limit, windowMs) {
 setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of visitCounts) if (entry.resetAt < now) visitCounts.delete(key);
+  for (const [key, entry] of leadCounts) if (entry.resetAt < now) leadCounts.delete(key);
   for (const [key, entry] of loginFailures) if (entry.resetAt < now) loginFailures.delete(key);
 }, 60 * 1000).unref();
 
@@ -386,6 +387,12 @@ app.use("/api/visits", (err, req, res, next) => {
   res.status(204).end();
 });
 
+// Real visitors send the form once; a flood from one connection would fill the database
+// and use up the hub's limit of 60 per 15 minutes, delaying real leads.
+const LEADS_PER_WINDOW = 5;
+const LEAD_WINDOW_MS = 15 * 60 * 1000;
+const leadCounts = new Map(); // address -> { count, resetAt }, kept in memory only
+
 app.post(
   "/api/leads",
   express.json({ limit: "10kb" }),
@@ -399,6 +406,9 @@ app.post(
 
     // Hidden "website" field: people leave it empty, spam bots fill it in.
     if (text(body.website, 200)) return reply(200, MESSAGES.sent);
+    if (!underLimit(leadCounts, req.ip, LEADS_PER_WINDOW, LEAD_WINDOW_MS)) {
+      return reply(429, MESSAGES.failed, { error: "too many" });
+    }
 
     const { lead, errors } = validateLead(body);
     if (Object.keys(errors).length) {
