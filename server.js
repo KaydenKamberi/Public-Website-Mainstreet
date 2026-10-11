@@ -776,11 +776,12 @@ app.get("/api/health", async (req, res) => {
 });
 
 // Lets /offerings serve offerings.html, so links work with or without ".html".
-// "/contact/" works like "/contact" (CR-002 D15). Leading slashes are collapsed
-// so a path like "//example.com/" can never redirect to another site.
+// "/contact/" works like "/contact" (CR-002 D15). Leading slashes and backslashes are
+// collapsed so a path like "//example.com/" or "/\example.com/" can never redirect to
+// another site (browsers read "/\" in a redirect like "//").
 app.use((req, res, next) => {
   if (req.path.length > 1 && req.path.endsWith("/") && !req.path.startsWith("/api/")) {
-    const clean = "/" + req.path.replace(/^\/+/, "").replace(/\/+$/, "");
+    const clean = "/" + req.path.replace(/^[\/\\]+/, "").replace(/\/+$/, "");
     return res.redirect(301, clean + req.url.slice(req.path.length));
   }
   next();
