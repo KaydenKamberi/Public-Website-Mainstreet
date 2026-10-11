@@ -638,7 +638,8 @@ function leadId(req) {
 
 app.get("/api/admin/leads", requireAdmin, async (req, res) => {
   if (!pool) return res.status(503).json({ error: "database not configured" });
-  const where = LEAD_FILTERS[req.query.filter] || LEAD_FILTERS.all;
+  // Own keys only: "?filter=__proto__" or "constructor" falls back to All instead of a broken query.
+  const where = Object.hasOwn(LEAD_FILTERS, req.query.filter) ? LEAD_FILTERS[req.query.filter] : LEAD_FILTERS.all;
   try {
     const { rows } = await pool.query(
       `SELECT ${LEAD_COLUMNS} FROM leads WHERE ${where} ORDER BY created_at DESC LIMIT 500`
