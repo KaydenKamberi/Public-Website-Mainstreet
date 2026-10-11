@@ -121,7 +121,8 @@ function validateLead(body) {
     links: [],
     message: text(body.message, 2000) || null,
     consent: body.consent === true || body.consent === "yes",
-    source: text(body.source, 100).toLowerCase() || "direct",
+    // Same cleaning as visits, so the dashboard matches leads to visits by source.
+    source: cleanSource(body.source),
   };
 
   if (!lead.name) errors.name = "Name is required.";
