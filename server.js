@@ -760,6 +760,17 @@ app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"] })
 
 app.use(sendNotFound);
 
+// Last stop for unexpected errors (for example a broken JSON body on an admin request):
+// a short plain answer, never Express's default page with the stack trace.
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  const status = err.status >= 400 && err.status < 500 ? err.status : 500;
+  if (status === 500) console.error("Request failed:", err.message);
+  const message = status === 500 ? "server error" : "bad request";
+  if (req.path.startsWith("/api/")) return res.status(status).json({ error: message });
+  res.status(status).type("text").send(message);
+});
+
 initDatabase()
   .catch((err) => {
     console.error("Database setup failed:", err.message);
