@@ -321,6 +321,16 @@ const app = express();
 // address (used only in memory for rate limits) and req.secure accurate.
 app.set("trust proxy", 1);
 
+// Basic security headers on every response (no extra packages): no MIME sniffing, and
+// don't announce the server software. Public pages may be framed (Replit's preview pane
+// shows the site in a frame); the admin blocks framing in its own policy below.
+app.disable("x-powered-by");
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
+
 // ---------- Visits (CR-004) ----------
 // One visit per browser session: source + page only. No IP, name, or device
 // info is stored. Bots that identify themselves are skipped.
@@ -490,7 +500,15 @@ app.use((req, res, next) => {
   }
   const adminRequest = /^\/admin(\.html|\.js)?\/?$/.test(clean) || clean.startsWith("/api/admin");
   if (adminRequest && !isTeamDevice(req)) return sendNotFound(req, res);
-  if (adminRequest) res.setHeader("Referrer-Policy", "no-referrer");
+  if (adminRequest) {
+    res.setHeader("Referrer-Policy", "no-referrer");
+    // The admin shows what visitors typed, so it only runs its own script and styles.
+    res.setHeader("Content-Security-Policy", [
+      "default-src 'self'", "script-src 'self'", "style-src 'self' https://fonts.googleapis.com",
+      "font-src https://fonts.gstatic.com", "img-src 'self' data:", "connect-src 'self'",
+      "object-src 'none'", "base-uri 'none'", "form-action 'self'", "frame-ancestors 'none'",
+    ].join("; "));
+  }
   next();
 });
 
