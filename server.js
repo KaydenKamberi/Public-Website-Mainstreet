@@ -116,6 +116,7 @@ function hubUrl(pathname) {
 
 const HUB_INTAKE_URL = hubUrl("/api/intake/website");
 const HUB_VISIT_URL = hubUrl("/api/intake/visit");
+const HUB_EVENTS_URL = hubUrl("/api/intake/events");
 const INTAKE_SECRET = process.env.INTAKE_SECRET || null;
 
 // Marketing source (CR-010): the utm_source or referring site from the visitor's browser.
@@ -224,6 +225,7 @@ setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of leadCounts) if (entry.resetAt < now) leadCounts.delete(key);
   for (const [key, entry] of visitCounts) if (entry.resetAt < now) visitCounts.delete(key);
+  for (const [key, entry] of eventCounts) if (entry.resetAt < now) eventCounts.delete(key);
 }, 60 * 1000).unref();
 
 app.post(
@@ -295,6 +297,51 @@ app.post(
 );
 
 app.use("/api/visits", (err, req, res, next) => {
+  if (!res.headersSent) res.status(204).end();
+});
+
+// ---------- Detailed analytics (CR-011) ----------
+// One batch per page view from script.js: taps, sections reached, time on screen, and
+// form steps, plus phone/tablet/computer. Only known kinds and short names pass; the
+// hub keeps daily totals. Like visits, failures are dropped and nothing is kept here.
+const EVENT_TYPES = new Set(["tap", "section", "time", "form"]);
+const DEVICES = new Set(["phone", "tablet", "computer"]);
+const EVENT_NAME = /^[a-z0-9_-]{1,40}$/;
+const EVENTS_PER_BATCH = 60;
+const BATCHES_PER_MINUTE = 30;
+const eventCounts = new Map(); // address -> { count, resetAt }
+
+app.post(
+  "/api/events",
+  express.text({ type: ["text/plain", "application/json"], limit: "8kb" }),
+  (req, res) => {
+    res.status(204).end();
+    if (!HUB_EVENTS_URL || !INTAKE_SECRET || BOT_PATTERN.test(req.get("user-agent") || "")) return;
+    if (!underLimit(eventCounts, req.ip, BATCHES_PER_MINUTE, 60 * 1000)) return;
+
+    let body;
+    try {
+      body = JSON.parse(typeof req.body === "string" ? req.body : "");
+    } catch (err) {
+      return;
+    }
+    if (!body || !VISIT_PAGES.has(body.page) || !Array.isArray(body.events)) return;
+    const events = body.events
+      .slice(0, EVENTS_PER_BATCH)
+      .filter((event) => event && EVENT_TYPES.has(event.type) && EVENT_NAME.test(event.name))
+      .map((event) => ({ type: event.type, name: event.name }));
+    if (!events.length) return;
+
+    postToHub(HUB_EVENTS_URL, {
+      page: body.page,
+      source: cleanSource(body.source),
+      ...(DEVICES.has(body.device) ? { device: body.device } : {}),
+      events,
+    }, `events on ${body.page}`, 5000);
+  }
+);
+
+app.use("/api/events", (err, req, res, next) => {
   if (!res.headersSent) res.status(204).end();
 });
 
