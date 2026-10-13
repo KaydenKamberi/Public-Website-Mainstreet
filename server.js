@@ -60,6 +60,7 @@ function validateLead(body) {
     links: [],
     message: text(body.message, 2000) || null,
     consent: body.consent === true || body.consent === "yes",
+    source: cleanSource(body.source),
   };
 
   if (!lead.name) errors.name = "Name is required.";
@@ -103,18 +104,58 @@ function validateLead(body) {
 // 200/201 = received (200 may say "duplicate": true); anything else = not received,
 // and the visitor is asked to try again.
 
-function hubIntakeUrl() {
+function hubUrl(pathname) {
   if (!process.env.HUB_URL) return null;
   try {
-    return new URL("/api/intake/website", process.env.HUB_URL).toString();
+    return new URL(pathname, process.env.HUB_URL).toString();
   } catch (err) {
     console.warn("HUB_URL is not a valid URL:", process.env.HUB_URL);
     return null;
   }
 }
 
-const HUB_INTAKE_URL = hubIntakeUrl();
+const HUB_INTAKE_URL = hubUrl("/api/intake/website");
+const HUB_VISIT_URL = hubUrl("/api/intake/visit");
 const INTAKE_SECRET = process.env.INTAKE_SECRET || null;
+
+// Marketing source (CR-010): the utm_source or referring site from the visitor's browser.
+// Same rule as the hub: missing means "direct", anything outside a-z 0-9 _ - (1-40) is "unknown".
+function cleanSource(value) {
+  const source = typeof value === "string" ? value.trim().toLowerCase() : "";
+  if (!source) return "direct";
+  return /^[a-z0-9_-]{1,40}$/.test(source) ? source : "unknown";
+}
+
+// Signs a JSON body like every hub intake endpoint expects and sends it.
+// Returns the hub's HTTP status, or null when there was no answer.
+async function postToHub(url, payload, label, timeoutMs) {
+  const body = JSON.stringify(payload);
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const signature = crypto.createHmac("sha256", INTAKE_SECRET)
+    .update(`${timestamp}.${body}`)
+    .digest("hex");
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Intake-Timestamp": timestamp,
+        "X-Intake-Signature": `sha256=${signature}`,
+      },
+      body,
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (response.status !== 200 && response.status !== 201) {
+      const detail = await response.text().catch(() => "");
+      console.warn(`Hub answered HTTP ${response.status} for ${label}: ${detail.slice(0, 200)}`);
+    }
+    return response.status;
+  } catch (err) {
+    const reason = err.name === "TimeoutError" ? `timed out after ${timeoutMs / 1000} seconds` : (err.cause && err.cause.code) || err.message;
+    console.warn(`Hub unreachable for ${label}: ${reason}`);
+    return null;
+  }
+}
 // One id per filled-in form, made in the visitor's browser and reused if they try again,
 // so the hub saves a lead once even when its first answer got lost.
 const SUBMISSION_ID = /^ms_[a-f0-9]{32}$/;
@@ -127,7 +168,7 @@ function submissionId(value) {
 
 // Returns true when the hub has the lead.
 async function sendToHub(lead, id) {
-  const body = JSON.stringify({
+  const status = await postToHub(HUB_INTAKE_URL, {
     submission_id: id,
     name: lead.name,
     business_type: HUB_BUSINESS_TYPES[lead.businessType],
@@ -139,32 +180,10 @@ async function sendToHub(lead, id) {
     // Empty link boxes are dropped; with none left, the key is left out.
     ...(lead.links.length ? { links: lead.links } : {}),
     consent: lead.consent,
+    source: lead.source,
     submitted_at: new Date().toISOString(),
-  });
-  const timestamp = String(Math.floor(Date.now() / 1000));
-  const signature = crypto.createHmac("sha256", INTAKE_SECRET)
-    .update(`${timestamp}.${body}`)
-    .digest("hex");
-
-  try {
-    const response = await fetch(HUB_INTAKE_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Intake-Timestamp": timestamp,
-        "X-Intake-Signature": `sha256=${signature}`,
-      },
-      body,
-      signal: AbortSignal.timeout(10000),
-    });
-    if (response.status === 200 || response.status === 201) return true;
-    const detail = await response.text().catch(() => "");
-    console.warn(`Hub answered HTTP ${response.status} for ${id}: ${detail.slice(0, 200)}`);
-  } catch (err) {
-    const reason = err.name === "TimeoutError" ? "timed out after 10 seconds" : (err.cause && err.cause.code) || err.message;
-    console.warn(`Hub unreachable for ${id}: ${reason}`);
-  }
-  return false;
+  }, id, 10000);
+  return status === 200 || status === 201;
 }
 
 const app = express();
@@ -204,6 +223,7 @@ const leadCounts = new Map(); // address -> { count, resetAt }
 setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of leadCounts) if (entry.resetAt < now) leadCounts.delete(key);
+  for (const [key, entry] of visitCounts) if (entry.resetAt < now) visitCounts.delete(key);
 }, 60 * 1000).unref();
 
 app.post(
@@ -241,9 +261,42 @@ app.use("/api/leads", (err, req, res, next) => {
   res.status(400).json({ message: MESSAGES.failed, error: "bad request" });
 });
 
-// Visit beacons from script.js (one per browser session). Nothing is kept here; once the
-// hub has a visits endpoint for its analytics page, CR-010 passes them on to it.
-app.post("/api/visits", (req, res) => res.status(204).end());
+// ---------- Visits (CR-010) ----------
+// One visit per browser session (page + source) from script.js, passed on to the hub's
+// Marketing page. Nothing is kept here, and no IP, name, or device info is sent.
+// Self-identified bots are skipped; a visit is only a count, so failures are dropped.
+const VISIT_PAGES = new Set(["home", "offerings", "about", "contact", "privacy"]);
+const BOT_PATTERN = /bot|crawl|spider|slurp|preview|headless|lighthouse/i;
+const VISITS_PER_MINUTE = 30;
+const visitCounts = new Map(); // address -> { count, resetAt }
+
+app.post(
+  "/api/visits",
+  express.text({ type: ["text/plain", "application/json"], limit: "1kb" }),
+  (req, res) => {
+    res.status(204).end();
+    if (!HUB_VISIT_URL || !INTAKE_SECRET || BOT_PATTERN.test(req.get("user-agent") || "")) return;
+    if (!underLimit(visitCounts, req.ip, VISITS_PER_MINUTE, 60 * 1000)) return;
+
+    let body;
+    try {
+      body = JSON.parse(typeof req.body === "string" ? req.body : "");
+    } catch (err) {
+      return;
+    }
+    if (!body || !VISIT_PAGES.has(body.page)) return;
+
+    postToHub(HUB_VISIT_URL, {
+      page: body.page,
+      source: cleanSource(body.source),
+      visited_at: new Date().toISOString(),
+    }, `visit to ${body.page}`, 5000);
+  }
+);
+
+app.use("/api/visits", (err, req, res, next) => {
+  if (!res.headersSent) res.status(204).end();
+});
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", hub: HUB_INTAKE_URL && INTAKE_SECRET ? "set up" : "not set up" });
