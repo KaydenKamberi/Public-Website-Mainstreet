@@ -3,15 +3,41 @@
 
 document.documentElement.classList.add("js");
 
-// Marketing source: keep the first utm_source this browser arrived with.
+// Marketing source: keep the first utm_source or referring site this browser arrived
+// with (CR-010). Only the site's name is used, never the full address or search words.
 const SOURCE_KEY = "mainstreet_source";
+const REFERRER_SOURCES = [
+  [/(^|\.)google\.|googlequicksearchbox/, "google"],
+  [/(^|\.)bing\.com$/, "bing"],
+  [/(^|\.)duckduckgo\.com$/, "duckduckgo"],
+  [/(^|\.)yahoo\./, "yahoo"],
+  [/(^|\.)instagram\.com$/, "instagram"],
+  [/(^|\.)(facebook\.com|fb\.com|fb\.me|messenger\.com)$/, "facebook"],
+  [/(^|\.)tiktok\.com$/, "tiktok"],
+  [/(^|\.)(twitter\.com|x\.com|t\.co)$/, "x"],
+  [/(^|\.)(linkedin\.com|lnkd\.in)$/, "linkedin"],
+  [/(^|\.)yelp\./, "yelp"],
+  [/(^|\.)nextdoor\./, "nextdoor"],
+];
+
+function sourceFromReferrer() {
+  let host = "";
+  try {
+    host = new URL(document.referrer).hostname.toLowerCase();
+  } catch (err) {
+    return ""; // No referrer: typed in, a bookmark, or an app that hides it.
+  }
+  if (!host || host === location.hostname) return "";
+  const known = REFERRER_SOURCES.find(([pattern]) => pattern.test(host));
+  return known ? known[1] : "other-site";
+}
 
 function getSource() {
   let saved = null;
   try {
     saved = localStorage.getItem(SOURCE_KEY);
   } catch (err) {
-    // Storage can be blocked (private mode); fall back to the current URL.
+    // Storage can be blocked (private mode); fall back to this page's link and referrer.
   }
   if (saved) return saved;
 
@@ -19,21 +45,21 @@ function getSource() {
     .trim()
     .toLowerCase()
     .slice(0, 100);
-  const source = fromUrl || "direct";
-  if (fromUrl) {
+  const found = fromUrl || sourceFromReferrer();
+  if (found) {
     try {
-      localStorage.setItem(SOURCE_KEY, source);
+      localStorage.setItem(SOURCE_KEY, found);
     } catch (err) {
       // Ignore: the source still applies to this page.
     }
   }
-  return source;
+  return found || "direct";
 }
 
 const visitorSource = getSource();
 
-// Visit tracking (CR-004): one visit per browser session, with only the
-// source and the page. Nothing personal is sent.
+// Visit tracking (CR-010): one visit per browser session, with only the
+// source and the page, passed on to the team hub. Nothing personal is sent.
 (function recordVisit() {
   const match = location.pathname.match(/^\/(index|offerings|about|contact|privacy)?(?:\.html)?$/);
   if (!match) return;

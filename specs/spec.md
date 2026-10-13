@@ -2,7 +2,7 @@
 
 ## Specification Status
 
-`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions. Updated 2026-10-08 by CR-003: wording for all business types, slimmer footer with payment methods, closing band refresh. Updated 2026-10-08 by CR-002: design polish, custom section images, concept sites, work wall, reviews section (hidden until real reviews), 404 page. Updated 2026-10-09 by CR-006 (location and links on the contact form, matching the hub's intake contract v2), CR-007 (business phone number), and CR-008 ("Send again" and the hub's answers in the admin). Updated 2026-10-13 by CR-009: no database on this site; it passes each contact form straight to the team hub, and the admin, backups and analytics live in the hub.
+`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions. Updated 2026-10-08 by CR-003: wording for all business types, slimmer footer with payment methods, closing band refresh. Updated 2026-10-08 by CR-002: design polish, custom section images, concept sites, work wall, reviews section (hidden until real reviews), 404 page. Updated 2026-10-09 by CR-006 (location and links on the contact form, matching the hub's intake contract v2), CR-007 (business phone number), and CR-008 ("Send again" and the hub's answers in the admin). Updated 2026-10-13 by CR-009: no database on this site; it passes each contact form straight to the team hub, and the admin, backups and analytics live in the hub. Updated 2026-10-13 by CR-010: visits and each lead's source go to the hub's Marketing page; the source can also be the referring site (Google, Instagram, …).
 
 This document defines the requirements for this student's business website.
 
@@ -495,7 +495,7 @@ Tell visitors exactly what information the contact form collects, why, and how t
 
 **Text messages.** Message frequency varies. Message and data rates may apply. Reply STOP to stop receiving texts, or HELP for help.
 
-**Website visits.** We record which link brought you to our site (for example, a flyer or social media link) to see which marketing works. This does not include your name or contact information.
+**Website visits.** We record which link or website brought you to our site (for example, a flyer, Google, or social media) to see which marketing works. This does not include your name or contact information.
 
 **How long we keep it.** This website does not keep a copy of your form. It goes straight to our team. (CR-009 D4)
 
@@ -529,11 +529,22 @@ Moved to the private team hub (CR-009). This site has no admin page and stores n
 
 # 9. Marketing Attribution
 
-Moves to the private team hub (CR-009, Kevin 2026-10-13: "I want to still have an analytics page"). The hub shows visits, leads and conversion rate by source.
+Shown in the private team hub's **Requests → Marketing** page (CR-009, CR-010; hub CR-011): visits, website requests, conversion rate and "Became clients" by source, for the last 30 days and all time, plus visits by page. Each website request in the hub shows "Came from: <source>".
 
-- The browser keeps the first `utm_source` it arrived with (or `direct`) and sends one visit per browser session to this site's `POST /api/visits`.
-- Until the hub has a visits endpoint and accepts `source` on leads, visits are accepted and dropped, and leads carry no source. CR-010 connects both once the hub publishes the contract.
+- **Source:** the first `utm_source` the browser arrived with. Without one, the referring site's name: `google`, `bing`, `duckduckgo`, `yahoo`, `instagram`, `facebook`, `tiktok`, `x`, `linkedin`, `yelp`, `nextdoor`, or `other-site`. Otherwise `direct`. Only the site's name is used, never the full address or search words.
+  - The first known source is kept in the browser (`direct` is never kept).
+  - The server sends a valid source (a-z 0-9 _ -, 1–40 characters) as is, a missing one as `direct`, and anything else as `unknown`, the same rule as the hub.
+- **Visits:** one per browser session (page + source). This site's server signs it and passes it to `POST <HUB_URL>/api/intake/visit`, answering the browser right away.
+  - It skips unknown pages, self-identified bots, and anything over 30 a minute per visitor.
+  - Failures are dropped, never retried. Nothing is stored here.
+- **Leads:** each form sent to the hub carries `source`.
 - `[NEEDS DECISION: which marketing campaign sources to track with utm_source]` Do not invent campaign sources the student has not selected.
+
+## Acceptance Criteria
+
+- Visiting any page with `?utm_source=test` adds one visit with source `test` on the hub's Marketing page, and a form sent later in the same browser shows "Came from: test".
+- Arriving from a Google search (no utm) counts as `google`. Typing the address counts as `direct`.
+- A hub that's down never slows a page.
 
 # 10. Images and Assets
 
