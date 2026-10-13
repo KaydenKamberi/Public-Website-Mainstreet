@@ -2,7 +2,7 @@
 
 ## Specification Status
 
-`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions. Updated 2026-10-08 by CR-003: wording for all business types, slimmer footer with payment methods, closing band refresh. Updated 2026-10-08 by CR-002: design polish, custom section images, concept sites, work wall, reviews section (hidden until real reviews), 404 page. Updated 2026-10-09 by CR-006 (location and links on the contact form, matching the hub's intake contract v2), CR-007 (business phone number), and CR-008 ("Send again" and the hub's answers in the admin). Updated 2026-10-13 by CR-009: no database on this site; it passes each contact form straight to the team hub, and the admin, backups and analytics live in the hub. Updated 2026-10-13 by CR-010: visits and each lead's source go to the hub's Marketing page; the source can also be the referring site (Google, Instagram, …).
+`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions. Updated 2026-10-08 by CR-003: wording for all business types, slimmer footer with payment methods, closing band refresh. Updated 2026-10-08 by CR-002: design polish, custom section images, concept sites, work wall, reviews section (hidden until real reviews), 404 page. Updated 2026-10-09 by CR-006 (location and links on the contact form, matching the hub's intake contract v2), CR-007 (business phone number), and CR-008 ("Send again" and the hub's answers in the admin). Updated 2026-10-13 by CR-009: no database on this site; it passes each contact form straight to the team hub, and the admin, backups and analytics live in the hub. Updated 2026-10-13 by CR-010: visits and each lead's source go to the hub's Marketing page; the source can also be the referring site (Google, Instagram, …). Updated 2026-10-13 by CR-011: taps, sections reached, time on page, form starts and device are counted for the hub's Marketing page.
 
 This document defines the requirements for this student's business website.
 
@@ -495,7 +495,7 @@ Tell visitors exactly what information the contact form collects, why, and how t
 
 **Text messages.** Message frequency varies. Message and data rates may apply. Reply STOP to stop receiving texts, or HELP for help.
 
-**Website visits.** We record which link or website brought you to our site (for example, a flyer, Google, or social media) to see which marketing works. This does not include your name or contact information.
+**Website visits.** We record which link or website brought you to our site, and count which pages, sections and buttons are used, how long pages stay open, and whether visitors use a phone or computer, to see what works. These are totals: they never include your name, contact information, or what you type.
 
 **How long we keep it.** This website does not keep a copy of your form. It goes straight to our team. (CR-009 D4)
 
@@ -538,6 +538,10 @@ Shown in the private team hub's **Requests → Marketing** page (CR-009, CR-010;
   - It skips unknown pages, self-identified bots, and anything over 30 a minute per visitor.
   - Failures are dropped, never retried. Nothing is stored here.
 - **Leads:** each form sent to the hub carries `source`.
+- **Detailed analytics (CR-011):** counts only, never tied to a person.
+  - Each page view collects taps (zone + target, for example `hero-contact`), sections reached (half on screen, once each, named by `data-section`), time on screen (`0-10s` … `5m-plus`), form steps (`start`, `sent`, `error`), and the device (phone, tablet or computer).
+  - It sends them as one batch when the visitor leaves or switches apps. This site's server checks the batch (known pages, types and names, up to 60 events, no bots, 30 batches a minute per visitor), signs it, and passes it to `POST <HUB_URL>/api/intake/events`. Failures are dropped.
+  - Nothing typed is ever sent.
 - `[NEEDS DECISION: which marketing campaign sources to track with utm_source]` Do not invent campaign sources the student has not selected.
 
 ## Acceptance Criteria
