@@ -2,7 +2,7 @@
 
 ## Specification Status
 
-`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions. Updated 2026-10-08 by CR-003: wording for all business types, slimmer footer with payment methods, closing band refresh. Updated 2026-10-08 by CR-002: design polish, custom section images, concept sites, work wall, reviews section (hidden until real reviews), 404 page. Updated 2026-10-09 by CR-006 (location and links on the contact form, matching the hub's intake contract v2), CR-007 (business phone number), and CR-008 ("Send again" and the hub's answers in the admin).
+`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions. Updated 2026-10-08 by CR-003: wording for all business types, slimmer footer with payment methods, closing band refresh. Updated 2026-10-08 by CR-002: design polish, custom section images, concept sites, work wall, reviews section (hidden until real reviews), 404 page. Updated 2026-10-09 by CR-006 (location and links on the contact form, matching the hub's intake contract v2), CR-007 (business phone number), and CR-008 ("Send again" and the hub's answers in the admin). Updated 2026-10-13 by CR-009: no database on this site; it passes each contact form straight to the team hub, and the admin, backups and analytics live in the hub.
 
 This document defines the requirements for this student's business website.
 
@@ -17,6 +17,7 @@ Business facts must come from the approved `business-brief.md` or later student 
   - Section 17: the site collects real customer contact information, not simulated data.
   - Section 18: the site uses outside services to send emails and texts automatically.
   - Section 3 and 11: the site adds a fifth public page, Privacy Policy (`privacy.html`).
+  - Database, admin page, lead management and the marketing dashboard (CR-009): this site has no database. The student decided these live in the private team hub, which receives every form.
 - **Automatic info document (decided).** When a visitor submits the contact form, the system sends them the info document for their business type by email or text within 5 minutes.
 - **Texting comes later (decided).** Automatic texts will use Twilio, added once the business has paying clients. Twilio charges per message and requires U.S. carrier registration before texts deliver. At launch, info documents are sent by email from the business Gmail.
 - **Operations items in the brief** (50/50 money split, team roles, AI-automated website management) describe how the business runs. They are not website features and must not be built into this site.
@@ -405,13 +406,13 @@ The visitor gives only one contact method. No payment fields. Nothing else on th
 
 ### Automatic info document
 
-- Every successful submission is saved in this site's database as a backup and immediately sent to the private team hub (`POST /api/intake/website`, signed with the shared secret `INTAKE_SECRET` from Replit Secrets). The request also carries `location` and, only when there are any, `links` (sent exactly as typed; the hub adds `https://` and keeps @handles as text) (CR-006). If the hub can't be reached, this site retries every 5 minutes for 24 hours, then once an hour until it gets through. A lead the hub refuses as invalid (400) is not retried (CR-008).
+- Every submission is sent straight to the private team hub (`POST /api/intake/website`, signed with the shared secret `INTAKE_SECRET` from Replit Secrets). This site keeps no copy (CR-009). The request also carries `location` and, only when there are any, `links` (sent exactly as typed; the hub adds `https://` and keeps @handles as text) (CR-006). The visitor waits for the hub's answer (up to 10 seconds). If the hub doesn't answer 200 or 201, the visitor sees the error message and can try again; each filled-in form keeps one `submission_id` until it succeeds, so trying again never saves a lead twice (CR-009).
 - Within 5 minutes of a successful submission, the team hub sends the info document that matches the chosen business type.
 - Email choice: the document is sent by email from the business Gmail.
 - Text choice: the document is sent by text as a link, through Twilio. **Before Twilio is added (decided):** the Text option stays. The hub marks the lead "Text by hand" and sends a push notification, and Kevin or Kayden texts the info doc link from the business number within 24 hours.
-- **Other (special request):** no document is sent. The visitor sees "Thanks! Kevin or Kayden will contact you personally." The lead is marked "Special request" in the admin area for personal follow-up.
+- **Other (special request):** no document is sent. The visitor sees "Thanks! Kevin or Kayden will contact you personally." The lead is marked "Special request" in the team hub for personal follow-up.
 - Each sent document is logged on the lead: document sent, method (email or text), date and time, and whether sending failed.
-- If sending fails, the lead is marked "Info doc not sent" in the admin area so Kevin or Kayden can send it by hand.
+- If sending fails, the lead is marked "Info doc not sent" in the team hub so Kevin or Kayden can send it by hand.
 
 ### Info documents (one per business type)
 
@@ -461,11 +462,11 @@ Send Message
 - Once Twilio is added, choosing Text sends a text with a link to the matching info document within 5 minutes.
 - A failed send marks the lead "Info doc not sent" in the team hub.
 - Every submission appears in the team hub within 1 minute.
-- If the hub is unreachable, the submission stays saved on this site and reaches the hub once it's back.
+- If the hub is unreachable or doesn't accept the form, the visitor sees the error message (with the business phone number) and can try again. Trying again sends the same `submission_id` (CR-009).
 - Each field has a visible `<label>`.
 - Successful submission creates a persistent lead.
 - The saved lead includes the visitor's `utm_source` (or `direct`).
-- Visitor receives clear success or error feedback. Success text: "Thanks! Your message was sent." Error text explains the submission failed and asks the visitor to try again.
+- Visitor receives clear success or error feedback. Success text: "Thanks! Your message was sent." Error text: "Sorry, your message could not be sent. Please try again, or text us at (619) 786-7135." (CR-009 D1)
 - The form collects only name, email, phone, business type, location, links, message, and consent.
 - Service area and availability appear on the page.
 - No placeholder phone number appears.
@@ -496,7 +497,7 @@ Tell visitors exactly what information the contact form collects, why, and how t
 
 **Website visits.** We record which link brought you to our site (for example, a flyer or social media link) to see which marketing works. This does not include your name or contact information.
 
-**How long we keep it.** This website keeps a backup copy of your form for 30 days after it reaches our team, then deletes it.
+**How long we keep it.** This website does not keep a copy of your form. It goes straight to our team. (CR-009 D4)
 
 **Your choices.** You can ask us to delete your information at any time by contacting us.
 
@@ -515,56 +516,24 @@ This wording is a starting point, not legal advice. The student may want a paren
 
 # 8. Lead Management
 
-## Student-Specific Requirements
+Moved to the private team hub (CR-009). This site has no admin page and stores no leads.
 
-- The admin page lists leads newest first.
-- Each lead shows name, email, phone, business type, location, links (only real `http(s)` addresses are clickable, opening in a new tab; @handles show as text), message, consent, source, submission date and time, status, response note, and whether it reached the team hub (yes / not yet / refused, with the time), and the hub's last answer for leads that haven't reached it (CR-008). Info document status lives in the team hub, which sends the documents (CR-004 D2).
-- Resending an info document happens in the team hub (CR-004 D2). The admin can delete this site's copy of a lead, with a confirm step, when someone asks for their information to be deleted (CR-004 D6).
-- Status options: `new` and `responded`. Filters: All, New, Responded, Not in the hub yet.
-- "Send again" (CR-008): every lead not in the hub yet has a **Send again** button that sends it to the hub right away (fresh timestamp and signature, same body and `submission_id`; a `200` with `"duplicate": true` counts as delivered). The **Not in the hub yet** filter has a **Send all again** button that sends every stuck lead one at a time, staying under the hub's limit of 60 per 15 minutes.
-- The hub's last answer (CR-008) is saved on each lead (`forward_last_answer`: the status code and the hub's short `error` text, never a secret) and shown on the card: 400 shows the hub's reason; 401 "Hub rejected the signature: check INTAKE_SECRET matches in both apps"; 403 "Hub address must start with https://, check HUB_URL"; 503 "The hub's INTAKE_SECRET isn't set yet"; 429, other errors, and no answer are shown as they are.
-- Login: one shared team password from the Replit Secret `ADMIN_PASSWORD`; a signed 12-hour session cookie; logins pause for 15 minutes after 5 wrong tries; the admin stays locked if the secret is not set (CR-004 D3).
-- Hidden from outsiders (CR-005): `/admin`, `/admin.html`, `/admin.js`, and `/api/admin/*` answer exactly like a missing page unless the device has been marked as a team device by opening the private team link `/team/<ADMIN_ACCESS_KEY>` (Replit Secret) once. The mark is a signed cookie that lasts 180 days. Changing `ADMIN_ACCESS_KEY` unmarks every device. Wrong team links show "Page not found", and after 5 wrong tries in 15 minutes a connection stops being checked. If `ADMIN_ACCESS_KEY` is not set, the admin is completely hidden. The team password is still required on team devices.
-- Marking a lead `responded` records the responded date and time.
-- Leads are real customer contacts. Store only what the form collects, and never show lead data outside the protected admin area.
-- Day-to-day lead management happens in the private team hub. This site's admin area is a backup view that also shows whether each submission reached the hub (`forwarded`: yes or no).
-- **Backup retention (matches the hub's CR-003 Data care):** a nightly cleanup deletes this site's backup copy of a submission 30 days after it was forwarded to the hub. Submissions that never reached the hub are kept and flagged until they do. The cleanup runs in report-only mode for its first 7 nights, then Kevin turns on real deletion.
+- Every form goes straight to the hub, where the team views leads, marks them responded, and deletes them on request.
+- Leads are real customer contacts: this site never shows lead data anywhere.
 - A Privacy Policy page explains how form information is used (see section 7A).
 
 ## Acceptance Criteria
 
-- Authorized admin access works.
-- Unauthorized users cannot retrieve lead data.
-- Leads appear with source, date/time, and status.
-- Response status and response notes persist.
-- The admin password is read from a Replit Secret and does not appear in any file in `/public`.
+- `/admin`, `/team/…` and `/api/admin/…` show the normal "Page not found" page.
+- The server runs with no `DATABASE_URL` and stores nothing.
 
 # 9. Marketing Attribution
 
-## Known Campaign Sources
+Moves to the private team hub (CR-009, Kevin 2026-10-13: "I want to still have an analytics page"). The hub shows visits, leads and conversion rate by source.
 
-- `direct` (no source provided)
-
-No campaign sources have been selected yet. `[NEEDS DECISION: which marketing campaign sources to track with utm_source]` The admin's tracking link maker builds links like `…/?utm_source=flyer` from any source name (lowercase letters, numbers, `-`, `_`; CR-004 D5).
-
-Do not invent campaign sources the student has not selected.
-
-## Dashboard Requirements
-
-Show by source:
-
-- visits
-- leads
-- conversion rate
-
-## Acceptance Criteria
-
-- Visits can be associated with a source.
-- Leads retain their source.
-- Direct traffic is represented appropriately.
-- Dashboard calculations are correct.
-- Visiting any page with `?utm_source=test` records a visit with source `test`, and later pages in the same browser keep `test` as the source.
-- Conversion rate equals leads ÷ visits × 100, and shows 0% (not an error) when a source has visits but no leads, and "—" when it has leads but no visits. The dashboard shows Last 30 days (default) and All time (CR-004 D4).
+- The browser keeps the first `utm_source` it arrived with (or `direct`) and sends one visit per browser session to this site's `POST /api/visits`.
+- Until the hub has a visits endpoint and accepts `source` on leads, visits are accepted and dropped, and leads carry no source. CR-010 connects both once the hub publishes the contract.
+- `[NEEDS DECISION: which marketing campaign sources to track with utm_source]` Do not invent campaign sources the student has not selected.
 
 # 10. Images and Assets
 
