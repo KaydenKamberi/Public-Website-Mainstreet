@@ -78,6 +78,120 @@ const visitorSource = getSource();
   }
 })();
 
+// Detailed analytics (CR-011): counts only, never tied to a person. Each page view
+// collects taps, sections reached, time on screen and form steps in memory, and sends
+// them in one batch when the visitor leaves or switches apps. Nothing typed is sent.
+const trackEvent = (function setupAnalytics() {
+  const match = location.pathname.match(/^\/(index|offerings|about|contact|privacy)?(?:\.html)?$/);
+  if (!match) return () => {};
+  const page = !match[1] || match[1] === "index" ? "home" : match[1];
+  const device = innerWidth < 768 ? "phone" : innerWidth < 1024 ? "tablet" : "computer";
+  const MAX_EVENTS = 60;
+  const events = [];
+  const once = new Set();
+  let sentUpTo = 0;
+  let timeSent = false;
+
+  function track(type, name) {
+    // Leaves room for the time event, so a page view never sends more than MAX_EVENTS.
+    if (!/^[a-z0-9_-]{1,40}$/.test(name) || events.length >= MAX_EVENTS - 1) return;
+    if (type !== "tap") {
+      if (once.has(`${type}:${name}`)) return;
+      once.add(`${type}:${name}`);
+    }
+    events.push({ type, name });
+  }
+
+  // Taps: where the link or button is, plus where it goes.
+  const ZONES = [
+    ["#site-nav", "nav"], [".site-header", "header"], ["[data-hero]", "hero"], [".sticky-cta", "sticky"],
+    ["[data-closing-band]", "closing"], [".site-footer", "footer"], [".contact-form", "form"],
+  ];
+  function tapTarget(el) {
+    if (el.matches(".menu-toggle")) return "menu";
+    if (el.matches("[data-add-link]")) return "add-link";
+    if (el.matches('button[type="submit"]')) return "send";
+    const href = el.getAttribute("href");
+    if (!href) return "button";
+    if (href.startsWith("sms:")) return "text";
+    if (href.startsWith("mailto:")) return "email";
+    if (href.startsWith("tel:")) return "call";
+    if (href.startsWith("#")) return "jump";
+    let url;
+    try {
+      url = new URL(href, location.href);
+    } catch (err) {
+      return "other";
+    }
+    if (url.host !== location.host) return "other-site";
+    const path = url.pathname.match(/^\/(index|offerings|about|contact|privacy)?(?:\.html)?\/?$/);
+    return path ? (!path[1] || path[1] === "index" ? "home" : path[1]) : "other";
+  }
+  document.addEventListener("click", (event) => {
+    const el = event.target.closest("a[href], button");
+    if (!el) return;
+    const zone = ZONES.find(([selector]) => el.closest(selector));
+    track("tap", `${zone ? zone[1] : "body"}-${tapTarget(el)}`);
+  }, true);
+
+  // Sections: counted once when half of a section is on screen, or, for a section taller
+  // than two screens, when it fills half the screen.
+  if ("IntersectionObserver" in window) {
+    const seen = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.intersectionRatio < 0.5 && entry.intersectionRect.height < innerHeight / 2) return;
+        track("section", entry.target.dataset.section);
+        seen.unobserve(entry.target);
+      });
+    }, { threshold: Array.from({ length: 21 }, (_, i) => i / 20) });
+    document.querySelectorAll("[data-section]:not([hidden])").forEach((section) => seen.observe(section));
+  }
+
+  // Time: only while the page is actually on screen.
+  let visibleMs = 0;
+  let shownAt = document.visibilityState === "visible" ? performance.now() : null;
+  function timeBucket() {
+    const seconds = (visibleMs + (shownAt === null ? 0 : performance.now() - shownAt)) / 1000;
+    if (seconds < 10) return "0-10s";
+    if (seconds < 30) return "10-30s";
+    if (seconds < 120) return "30s-2m";
+    if (seconds < 300) return "2-5m";
+    return "5m-plus";
+  }
+
+  function flush() {
+    if (!timeSent) {
+      timeSent = true;
+      events.push({ type: "time", name: timeBucket() });
+    }
+    const batch = events.slice(sentUpTo);
+    sentUpTo = events.length;
+    if (!batch.length) return;
+    const body = JSON.stringify({ page, source: visitorSource, device, events: batch });
+    if (navigator.sendBeacon) navigator.sendBeacon("/api/events", body);
+    else fetch("/api/events", { method: "POST", body, keepalive: true }).catch(() => {});
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      if (shownAt !== null) visibleMs += performance.now() - shownAt;
+      shownAt = null;
+      flush();
+    } else {
+      shownAt = performance.now();
+    }
+  });
+  addEventListener("pagehide", () => {
+    if (shownAt !== null) {
+      visibleMs += performance.now() - shownAt;
+      shownAt = null;
+    }
+    flush();
+  });
+
+  return track;
+})();
+
 // Phone menu
 const menuToggle = document.querySelector(".menu-toggle");
 const siteNav = document.getElementById("site-nav");
@@ -240,6 +354,11 @@ if (contactForm) {
     if (event.target.name === "contactMethod") showMethodField();
   });
 
+  // Analytics (CR-011): the first time someone types or picks something.
+  ["input", "change"].forEach((type) => contactForm.addEventListener(type, (event) => {
+    if (event.target.name !== "website") trackEvent("form", "start");
+  }));
+
   contactForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     status.textContent = "";
@@ -282,11 +401,13 @@ if (contactForm) {
       contactForm.reset();
       resetLinks();
       submissionId = newSubmissionId();
+      trackEvent("form", "sent");
       showMethodField();
       status.textContent = result.message;
       status.classList.add("is-success");
     } catch (err) {
       status.textContent = "Sorry, your message could not be sent. Please try again, or text us at (619) 786-7135.";
+      trackEvent("form", "error");
       status.classList.add("is-error");
     } finally {
       submitButton.disabled = false;
