@@ -14,7 +14,7 @@ For the public website repo (built with Claude Code on GitHub, run on Replit). *
 2. Clone it, unzip this package into it (`CLAUDE.md`, `specs/`, `brand/` at the top level), commit, and push.
 3. Add `.claude/settings.json` with the same git permissions Kevin uses for the hub.
 4. Open Claude Code in the repo and send the first message below.
-5. In Replit: Create → Import from GitHub, add PostgreSQL and the Secrets Claude Code lists, then Run. Replit only pulls; it never commits.
+5. In Replit: Create → Import from GitHub, add the Secrets Claude Code lists (`HUB_URL`, `INTAKE_SECRET`), then Run. No database is needed (CR-009). Replit only pulls; it never commits.
 
 ## First message for Claude Code
 "Read CLAUDE.md and everything in specs/. Build the site in the phases from specs/constitution.md (Phase 1: Technical Foundation through Phase 6). Start with Phase 1 only. Tell me which Replit Secrets and database setup I need. Merge to main when it runs without errors, then stop for my review."

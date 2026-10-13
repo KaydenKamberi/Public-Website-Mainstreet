@@ -9,9 +9,9 @@ The public website for Mainstreet Sites SD (mainstreetsitessd.com). Restaurants 
 - The chat is not the source of truth. Changes go in the spec first, and Kevin or Kayden approves them.
 
 ## Stack and where things run
-- Plain HTML, CSS, JavaScript + Node.js/Express + Replit PostgreSQL (per the constitution). No frameworks or build step unless the spec allows it.
-- Code lives on GitHub; Claude Code is the only thing that edits it. Replit runs it (database, Secrets, deployment): Git → Pull, then Run. Never let Replit Agent change code.
-- Keys and passwords (admin password, `INTAKE_SECRET`, hub URL) come from Replit Secrets, never code.
+- Plain HTML, CSS, JavaScript + a small Node.js/Express server. No database (CR-009): the server only passes contact forms to the private team hub. No frameworks or build step unless the spec allows it.
+- Code lives on GitHub; Claude Code is the only thing that edits it. Replit runs it (Secrets, deployment): Git → Pull, then Run. Never let Replit Agent change code.
+- Keys and passwords (`INTAKE_SECRET`, hub URL) come from Replit Secrets, never code.
 - The private team hub is a separate repo. This site only talks to it through `POST /api/intake/website` (see spec section 7).
 
 ## How to work
