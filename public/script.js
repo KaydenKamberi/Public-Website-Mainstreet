@@ -115,6 +115,12 @@ if (contactForm) {
   const MAX_LINKS = 5;
 
   const chosenMethod = () => fields.contactMethod.value;
+
+  // One id per filled-in form, kept if the visitor tries again after an error, so the
+  // team hub saves the lead only once (CR-009).
+  const newSubmissionId = () => "ms_" + [...crypto.getRandomValues(new Uint8Array(16))]
+    .map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  let submissionId = newSubmissionId();
   const linkInputs = () => [...linkBoxes.querySelectorAll("input")];
 
   // Links: one box to start, "Add another link" adds up to 5 (CR-006).
@@ -232,9 +238,12 @@ if (contactForm) {
       consent: fields.consent.checked,
       website: fields.website.value,
       source: visitorSource,
+      submissionId,
     };
 
+    // The site waits for the team hub's answer (CR-009), so show that it's working.
     submitButton.disabled = true;
+    submitButton.textContent = "Sending…";
     try {
       const response = await fetch("/api/leads", {
         method: "POST",
@@ -246,14 +255,16 @@ if (contactForm) {
 
       contactForm.reset();
       resetLinks();
+      submissionId = newSubmissionId();
       showMethodField();
       status.textContent = result.message;
       status.classList.add("is-success");
     } catch (err) {
-      status.textContent = "Sorry, your message could not be sent. Please try again.";
+      status.textContent = "Sorry, your message could not be sent. Please try again, or text us at (619) 786-7135.";
       status.classList.add("is-error");
     } finally {
       submitButton.disabled = false;
+      submitButton.textContent = "Send Message";
       status.focus();
     }
   });

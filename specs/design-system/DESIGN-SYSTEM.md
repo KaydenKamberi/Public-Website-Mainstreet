@@ -131,6 +131,8 @@ Load from Google Fonts: Fraunces (500, 600) and Instrument Sans (400, 500, 600).
 
 ### Components added by CR-004 (2026-10-08): admin area only
 
+> **Removed by CR-009 (2026-10-13):** this site no longer has an admin area, so the components below and the CR-008 admin rows are no longer used. The status color tokens stay in `tokens.css` (tokens are global).
+
 | Component | Look | Where |
 | --- | --- | --- |
 | **Admin bar** | Night bar with the logo, a marigold-bright "Admin" tag, and a Log out button. | Admin |
@@ -148,7 +150,7 @@ Load from Google Fonts: Fraunces (500, 600) and Instrument Sans (400, 500, 600).
 | **Field hint** | Small subtle text (14px, `--color-subtle`) between a field's label and its box, tied to the box with `aria-describedby`. | Contact form |
 | **Add-a-box link** | A `<button>` that looks like a Text link (forest, underlined, marigold-deep on hover), 44px tall, no pill or border, so it doesn't count as a button in the CTA map. Hidden once the field has its maximum boxes. | Contact form "Add another link" |
 
-### Components updated by CR-008 (2026-10-09): admin area only
+### Components updated by CR-008 (2026-10-09): admin area only (removed by CR-009)
 
 | Component | Look | Where |
 | --- | --- | --- |
