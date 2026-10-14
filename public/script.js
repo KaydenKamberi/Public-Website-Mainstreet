@@ -111,6 +111,8 @@ const trackEvent = (function setupAnalytics() {
     if (el.matches(".menu-toggle")) return "menu";
     if (el.matches("[data-add-link]")) return "add-link";
     if (el.matches('button[type="submit"]')) return "send";
+    if (el.matches("[data-showcase-pick]")) return "showcase";
+    if (el.matches("[data-pause]")) return "pause";
     const href = el.getAttribute("href");
     if (!href) return "button";
     if (href.startsWith("sms:")) return "text";
