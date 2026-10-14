@@ -42,7 +42,7 @@ The day-to-dusk gradient: `linear-gradient(var(--color-cream) 0%, #1A2B33 30%, v
 
 | Role | Font | Size (phone → desktop) | Notes |
 | --- | --- | --- | --- |
-| Hero heading | Fraunces 500 | 44 → 74px | Line height 1.03. One phrase may be highlighted in marigold-text. |
+| Hero heading | Fraunces 500 | 44 → 74px | Line height 1.03. One phrase may be highlighted in marigold-text. On Home at 1280px+, beside the device stage: 44 → 68px (`--text-hero-split`, CR-012). |
 | Section heading | Fraunces 500 | 32 → 44px | |
 | Card heading | Fraunces 600 or Instrument Sans 600 | 20 → 24px | |
 | Lead text | Instrument Sans 400 | 17 → 19px | First phrase may be bold ink. |
@@ -157,12 +157,29 @@ Load from Google Fonts: Fraunces (500, 600) and Instrument Sans (400, 500, 600).
 | **Lead card (updated)** | Adds Location and Links to the facts list (only `http(s)` links are clickable); under the Team hub badge, a small "Last try …" line with the hub's answer; a secondary **Send again** button next to Save while the lead isn't in the hub. | Admin |
 | **Send all row** | A secondary **Send all again** button with a small result line beside it. Shown only on the "Not in the hub yet" filter. | Admin |
 
+### Components added by CR-012 (2026-10-14)
+
+| Component | Look | Where |
+| --- | --- | --- |
+| **Device stage** | The CR-002 Device frames (laptop with the phone in front, bottom right), sized to the stage with container units. Behind them: a faint forest dot grid (20px) and a soft glow made from a tiny blurred copy of the site on screen, both fading out at the edges. Decorative (`aria-hidden`). | Home hero |
+| **Stage chip** | Paper pill (82% opaque, line-soft border, `--shadow-card`) above the laptop. During the intro: three steps "Sketch / Design / Live" with a forest pill that slides to the current step. After: a marigold dot with a soft ping + "Concept restaurant" (the site on screen). | Home hero |
+| **Sketch wireframe** | The concept site's layout as outlined blocks (forest lines that draw themselves, paper fills, an image box with a cross), then filled with the concept site's own colors (`--concept-*`). Intro only. | Home hero laptop |
+| **Designer cursor** | Forest arrow with a paper outline + a marigold "Mainstreet" name tag; selects a block with a marigold box and corner handles. Intro only. | Home hero laptop |
+| **Render line** | A 2px marigold-bright line with a soft glow that sweeps down the screen as the finished site appears. Intro only. | Home hero laptop |
+| **Hand-drawn arrow** | A curved marigold stroke with an arrowhead, drawn on once, with the label "Our work" (Fraunces 600, forest, turned -4°). | Under the device stage |
+| **Storefront carousel** | The storefront street, synced with the device stage: center = the site on screen (raised `--storefront-lift`, fully lit), sides dimmed. Under 768px: the center store is 74% wide with the others peeking at the edges (replaces the sideways-scrolling row). Each window is a button holding a full-page screenshot that scrolls in sync with the laptop. | Home dusk band |
+| **Storefront tag** | Small night pill (84% opaque) in the window's top left: "● Now showing" (marigold-bright dot) or "Up next →". Shown only while the showcase runs. | Storefront windows |
+| **Progress line** | 3px marigold line across the top of the "Now showing" window, filling over the 7 seconds before the next switch. | Storefront windows |
+| **Pause control** | Night-text icon + "Pause"/"Play", 44px tall, no pill or border (like the phone Menu button, so it is not counted as a button), with three dots showing which site is on screen (the current dot is a marigold-bright bar). | Under the storefronts (beside the fact lines at 1280px+) |
+
+**Motion added by CR-012:** the intro (about 4 seconds, once per browser session) and the 7-second showcase loop described in `CR-012`, using `--ease-settle`, `--ease-glide` and `--ease-out-expo`. Transforms and opacity only; no libraries. It pauses on the Pause control, on hover or keyboard focus of a storefront, off screen, and in a hidden tab. Nothing moves under `prefers-reduced-motion` or without JavaScript.
+
 ## 6. Layout
 
 - Content width 1264px max, not counting the side padding of 24px (phone) to 88px (desktop).
-- Hero (1280px and up): heading on the left (55% of the content), lead text + buttons on the right (45%, no column gap, both top-aligned). Header + hero + dusk band fill the first screen; leftover cream sits between the price line and the band.
-- Hero (768-1279px): stacked, buttons side by side; storefronts in one row with the fact lines in a row under them.
-- Hero (phone): heading, then lead, then buttons, then a horizontally scrollable storefront street.
+- Hero (1280px and up): heading, lead text + buttons on the left (46%), the device stage on the right (54%, reaching 56px into the right margin), vertically centered (CR-012). Header + hero + dusk band fill at least the first screen.
+- Hero (768-1279px): stacked, buttons side by side, then the device stage (up to 640px wide, centered); storefronts in one row with the Pause control and the fact lines under them.
+- Hero (phone): heading, then lead, then buttons, then the device stage, then the storefront carousel.
 - Space between sections: 72px (phone) to 120px (desktop).
 - Button placement follows the **CTA Placement Map** in `spec.md`.
 
@@ -171,6 +188,7 @@ Load from Google Fonts: Fraunces (500, 600) and Instrument Sans (400, 500, 600).
 - Shop windows fade their glow in once when scrolled into view (400ms).
 - Buttons: 150ms background change on hover (`--duration-fast`).
 - Sticky phone bar: slides up over 400ms (`--duration`).
+- Home device stage and storefront carousel: see "Motion added by CR-012" in section 5.
 - Everything turns off under `prefers-reduced-motion`.
 
 ## 8. Adding something new

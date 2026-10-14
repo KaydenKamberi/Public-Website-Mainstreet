@@ -87,6 +87,17 @@
   --ease: cubic-bezier(.2, .7, .2, 1);
   --duration: 400ms;
   --duration-fast: 150ms;
+  --ease-settle: cubic-bezier(.22, 1.25, .36, 1);  /* lands with a small overshoot (CR-012) */
+  --ease-glide: cubic-bezier(.65, 0, .35, 1);      /* slow in, slow out (CR-012) */
+  --ease-out-expo: cubic-bezier(.16, 1, .3, 1);    /* fast start, long soft landing (CR-012) */
+
+  /* Home device stage (CR-012) */
+  --text-hero-split: clamp(44px, 4.7vw, 68px);     /* hero heading beside the device stage, 1280px+ */
+  /* The concept restaurant's own colors, used only in the "Design" step of the hero wireframe */
+  --concept-ink: #201A14;
+  --concept-photo: #4A3524;
+  --concept-glass: #7A6450;
+  --concept-dim: #CDBFAF;
 }
 @media (prefers-reduced-motion: reduce) { :root { --duration: 0ms; --duration-fast: 0ms; } }
 
@@ -698,6 +709,7 @@ main:has(> .closing-band:last-child) + .site-footer {
 
 .hero-grid {
   display: grid;
+  gap: var(--space-7);
 }
 
 .hero-heading h1 {
@@ -773,15 +785,16 @@ main:has(> .closing-band:last-child) + .site-footer {
   background: repeating-linear-gradient(90deg, var(--awning-color) 0 calc(100% / 15), var(--color-cream) calc(100% / 15) calc(200% / 15));
 }
 
-.storefront:nth-child(1) {
+/* Each site keeps its awning color as the storefronts move (CR-012). */
+.storefront[data-site="restaurant"] {
   --awning-color: var(--color-forest);
 }
 
-.storefront:nth-child(2) {
+.storefront[data-site="barber"] {
   --awning-color: var(--color-marigold);
 }
 
-.storefront:nth-child(3) {
+.storefront[data-site="bakery"] {
   --awning-color: var(--color-brick);
 }
 
@@ -806,7 +819,8 @@ main:has(> .closing-band:last-child) + .site-footer {
   padding-top: 54%;
 }
 
-.storefront:nth-child(2) .storefront-window::before {
+/* The "Now showing" store is the raised one (CR-012). */
+.storefront.is-now .storefront-window::before {
   padding-top: calc(54% + var(--storefront-lift));
 }
 
@@ -867,8 +881,13 @@ main:has(> .closing-band:last-child) + .site-footer {
 
 @media (min-width: 1280px) {
   .hero-grid {
-    grid-template-columns: 55fr 45fr;
-    align-items: start;
+    grid-template-columns: 46fr 54fr;
+    align-items: center;
+    gap: var(--space-8);
+  }
+
+  .hero-heading h1 {
+    font-size: var(--text-hero-split);
   }
 
   .first-screen {
@@ -1562,3 +1581,300 @@ main:has(> .closing-band:last-child) + .site-footer {
 .pay-icon { color: var(--color-night); font-family: var(--font-display); font-size: 13px; font-weight: var(--weight-display-strong); }
 .pay-icon-venmo::before, .pay-icon-cash::before { content: none; }
 .site-footer .footer-facts a { min-height: 44px; }
+
+/* ===== CR-012: Home device stage ===== */
+
+.first-screen { overflow-x: clip; }
+.hero { position: relative; z-index: 1; }
+
+.device-stage {
+  position: relative;
+  isolation: isolate;
+  container-type: inline-size;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding-bottom: 6cqw;
+}
+
+/* Design canvas: a faint dot grid that fades out at the edges */
+.device-stage::before {
+  content: "";
+  position: absolute;
+  inset: -14% -24% -8% -16%;
+  z-index: -2;
+  background: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--color-forest) 26%, transparent) 1.2px, transparent 1.7px) 0 0 / 20px 20px;
+  -webkit-mask-image: radial-gradient(closest-side, #000 40%, transparent);
+  mask-image: radial-gradient(closest-side, #000 40%, transparent);
+  pointer-events: none;
+}
+
+/* Ambient glow: a tiny copy of the site on screen, blurred */
+.stage-ambient {
+  position: absolute;
+  inset: -10% -26% -6% -14%;
+  z-index: -1;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(closest-side, #000 25%, transparent);
+  mask-image: radial-gradient(closest-side, #000 25%, transparent);
+}
+
+.stage-ambient span {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  filter: blur(40px) saturate(1.35);
+  opacity: 0;
+  transition: opacity 1600ms var(--ease);
+}
+
+.stage-ambient span.is-on { opacity: 0.62; }
+
+/* Status chip above the laptop */
+.stage-chip {
+  display: grid;
+  place-items: center;
+  width: 84cqw;
+  height: 36px;
+  margin: 0 0 3.2cqw;
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-display-strong);
+  line-height: 1;
+}
+
+.chip-now {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 36px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-line-soft);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+  box-shadow: var(--shadow-card);
+  color: var(--color-forest);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.chip-now i { position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--color-marigold); }
+.chip-now i::after { content: ""; position: absolute; inset: -4px; border: 2px solid var(--color-marigold); border-radius: 50%; opacity: 0; animation: live-ping 2400ms var(--ease) infinite; }
+@keyframes live-ping { 0% { opacity: 0.9; transform: scale(0.5); } 70%, 100% { opacity: 0; transform: scale(1.6); } }
+[data-now] { display: inline-block; }
+
+/* Device frames (CR-002), sized to the stage */
+.stage-laptop { width: 84cqw; }
+.stage-phone {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  width: 21cqw;
+  padding: 1.1cqw;
+  border-radius: 4.4cqw;
+}
+
+.device-screen { position: relative; overflow: hidden; background: var(--color-cream); }
+.stage-laptop .device-screen { aspect-ratio: 16 / 10; border-radius: 4px 4px 0 0; }
+.stage-phone .device-screen { aspect-ratio: 390 / 844; border-radius: 3.3cqw; }
+.screen-page { position: absolute; inset: 0; opacity: 0; }
+.screen-page.is-on { opacity: 1; }
+.device-stage .screen-page img { width: 100%; height: auto; border-radius: 0; }
+
+/* Hand-drawn arrow down to the storefronts */
+.stage-arrow { position: absolute; top: calc(100% - 4cqw); left: 30cqw; width: clamp(92px, 22cqw, 150px); overflow: visible; transform: rotate(-28deg); pointer-events: none; }
+.stage-arrow path { fill: none; stroke: var(--color-marigold); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; }
+.arrow-label { position: absolute; top: calc(100% + 1cqw); left: 50cqw; color: var(--color-forest); font-family: var(--font-display); font-size: clamp(16px, 3cqw, 20px); font-weight: var(--weight-display-strong); white-space: nowrap; transform: rotate(-4deg); pointer-events: none; }
+
+@media (min-width: 1280px) {
+  .device-stage { width: calc(100% + 56px); max-width: none; margin: 0 -56px 0 0; }
+  .stage-arrow { top: calc(100% - 7cqw); left: -4cqw; transform: none; }
+  .arrow-label { top: calc(100% - 3cqw); left: 19cqw; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip-now i::after { animation: none; }
+}
+
+/* ===== CR-012: storefronts synced with the device stage ===== */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.storefront-window::before { transition: padding-top 800ms var(--ease-glide); }
+.window-scroll { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+.storefront-window .window-scroll img { position: static; display: block; height: auto; transition: opacity 600ms var(--ease), filter 600ms var(--ease); }
+.window-caption { z-index: 2; }
+
+/* A button over each window (added by the script) shows that site in the laptop. */
+.window-pick { position: absolute; inset: 0; z-index: 3; width: 100%; padding: 0; border: 0; border-radius: inherit; background: none; cursor: pointer; }
+
+.is-showcase .storefront:not(.is-now) .window-scroll img { opacity: 0.5; filter: saturate(0.6); }
+.is-showcase .storefront:not(.is-now) .storefront-window { box-shadow: 0 0 var(--space-3) 0 color-mix(in srgb, var(--color-marigold-bright) 14%, transparent); }
+.is-showcase .storefront:not(.is-now) .storefront-window:hover .window-scroll img { opacity: 0.85; filter: none; }
+
+/* "Now showing" and "Up next" tags, and the line that fills until the next switch */
+.window-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-1) 10px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-night) 84%, transparent);
+  color: var(--color-night-text);
+  font-size: 12px;
+  font-weight: var(--weight-display-strong);
+  line-height: 1.2;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity var(--duration) var(--ease), transform 500ms var(--ease-settle);
+}
+
+.is-showcase .is-now .window-tag,
+.is-moving .is-next .window-tag { opacity: 1; transform: none; }
+.is-now .window-tag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--color-marigold-bright); }
+.is-now .window-tag::after { content: "Now showing"; }
+.is-next .window-tag::after { content: "Up next →"; }
+
+.window-progress { position: absolute; top: 0; right: 0; left: 0; z-index: 2; height: 3px; overflow: hidden; border-radius: var(--space-1) var(--space-1) 0 0; background: color-mix(in srgb, var(--color-night) 35%, transparent); opacity: 0; transition: opacity 300ms var(--ease); }
+.window-progress i { display: block; height: 100%; background: var(--color-marigold); transform: scaleX(0); transform-origin: left; }
+.is-moving .is-now .window-progress { opacity: 1; }
+
+/* Pause control: icon + text, no pill (not counted as a button) */
+.street-controls { display: flex; align-items: center; gap: var(--space-3); }
+.street-controls[hidden] { display: none; }
+.street-dots { display: flex; gap: 6px; }
+.street-dots i { width: 6px; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--color-night-text) 30%, transparent); transition: width 500ms var(--ease-settle), background-color var(--duration) var(--ease); }
+.street-dots i.is-on { width: 18px; background: var(--color-marigold-bright); }
+.street-pause {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: none;
+  color: var(--color-night-text);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: var(--weight-display-strong);
+  cursor: pointer;
+}
+.street-pause:hover { color: var(--color-marigold-bright); }
+.pause-icon { width: 10px; height: 12px; border-inline: 3px solid currentColor; }
+.street-pause.is-paused .pause-icon { width: 0; height: 0; border-block: 6px solid transparent; border-inline: 10px solid currentColor; border-right: 0; }
+
+@media (max-width: 767px) {
+  /* With the script: the current store centered, the others peeking at the edges. */
+  .js .street-scroll { padding: 0; overflow: hidden; scroll-snap-type: none; }
+  .js .storefront-street { gap: var(--space-3); touch-action: pan-y; }
+  .js .storefront { flex: 0 0 74%; }
+  .js .storefront:first-child { margin-left: calc(13% - 74% - var(--space-3)); }
+  .street-controls { justify-content: center; }
+}
+
+@media (min-width: 1280px) {
+  .street-controls { grid-column: 4; grid-row: 1; align-self: start; margin-top: var(--space-6); }
+  .street .fact-lines { grid-column: 4; grid-row: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storefront-window::before, .storefront-window .window-scroll img, .window-tag { transition: none; }
+}
+
+/* ===== CR-012: intro, "Sketch → Design → Live" (once per browser session) ===== */
+
+.stage-laptop .device-screen { container-type: size; }
+
+/* Chip steps: a forest pill slides to the current step */
+.chip-now, .chip-steps { transition: opacity 450ms var(--ease), transform 600ms var(--ease-settle); }
+.chip-steps {
+  position: relative;
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 3px;
+  border: 1px solid var(--color-line-soft);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+  box-shadow: var(--shadow-card);
+  opacity: 0;
+  transform: scale(0.9);
+}
+.chip-steps b { position: relative; z-index: 1; width: 72px; color: var(--color-subtle); font-weight: var(--weight-display-strong); text-align: center; transition: color 350ms var(--ease); }
+.chip-pill { position: absolute; top: 3px; bottom: 3px; left: 3px; width: 72px; border-radius: var(--radius-pill); background: var(--color-forest); transform: translateX(calc(var(--step, 0) * 72px)); transition: transform 550ms var(--ease-settle); }
+.device-stage[data-step="sketch"] .chip-steps b:nth-of-type(1),
+.device-stage[data-step="design"] .chip-steps b:nth-of-type(2),
+.device-stage[data-step="live"] .chip-steps b:nth-of-type(3) { color: var(--color-paper); }
+.device-stage.is-intro .chip-steps { opacity: 1; transform: none; }
+.device-stage.is-intro .chip-now { opacity: 0; transform: scale(0.9); }
+
+/* Wireframe: outlines draw themselves, then fill with the concept site's colors */
+.wire { position: absolute; inset: 0; z-index: 1; display: none; width: 100%; height: 100%; }
+.device-stage.is-intro .wire { display: block; }
+.wire :is(rect, path) {
+  fill: var(--color-paper);
+  fill-opacity: 0;
+  stroke: color-mix(in srgb, var(--color-forest) 55%, transparent);
+  stroke-width: 3;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: fill 600ms var(--ease), stroke 500ms var(--ease);
+  animation: wire-draw 600ms var(--ease-out-expo) calc(var(--d) * 75ms) both paused, wire-fill 500ms var(--ease) calc(var(--d) * 75ms + 280ms) both paused;
+}
+.wire .f-hero { fill: color-mix(in srgb, var(--color-line-soft) 60%, var(--color-cream)); }
+.wire .x { fill: none; stroke: color-mix(in srgb, var(--color-forest) 28%, transparent); }
+.device-stage:not([data-step="0"]) .wire :is(rect, path) { animation-play-state: running; }
+@keyframes wire-draw { to { stroke-dashoffset: 0; } }
+@keyframes wire-fill { to { fill-opacity: 1; } }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire :is(rect, path) { stroke: transparent; }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire :is(.f-banner, .f-ink) { fill: var(--concept-ink); }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire .f-hero { fill: var(--concept-photo); }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire .f-light { fill: var(--color-paper); }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire .f-gold { fill: var(--color-marigold); }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire .f-glass { fill: var(--concept-glass); }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire .f-dim { fill: var(--concept-dim); }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire .f-line { fill: var(--concept-photo); stroke: color-mix(in srgb, var(--color-paper) 80%, transparent); }
+.wire-drag { transform: translate(46px, 30px); }
+
+/* Selection box, designer cursor, render line */
+.select-box { position: absolute; top: 39%; left: 2.8%; z-index: 2; width: 46%; height: 19.8%; border: 1.5px solid var(--color-marigold); opacity: 0; transform: translate(3.6cqw, 3.75cqh); }
+.select-box i { position: absolute; width: 7px; height: 7px; border: 1.5px solid var(--color-marigold); background: var(--color-paper); }
+.select-box i:nth-child(1) { top: -4px; left: -4px; }
+.select-box i:nth-child(2) { top: -4px; right: -4px; }
+.select-box i:nth-child(3) { bottom: -4px; left: -4px; }
+.select-box i:nth-child(4) { right: -4px; bottom: -4px; }
+.cursor { position: absolute; top: 0; left: 0; z-index: 4; display: flex; align-items: flex-start; opacity: 0; pointer-events: none; }
+.cursor svg { width: clamp(13px, 3cqw, 20px); fill: var(--color-forest); stroke: var(--color-paper); stroke-width: 1.6; stroke-linejoin: round; filter: drop-shadow(0 2px 3px color-mix(in srgb, var(--color-night) 30%, transparent)); }
+.cursor > span { margin: clamp(10px, 2.6cqw, 16px) 0 0 -2px; padding: 3px var(--space-2); border-radius: var(--radius-pill); background: var(--color-marigold); color: var(--color-ink); font-size: clamp(9px, 1.7cqw, 12px); font-weight: var(--weight-display-strong); white-space: nowrap; }
+.render-line { position: absolute; top: 0; right: 0; left: 0; z-index: 3; height: 2px; background: var(--color-marigold-bright); box-shadow: 0 0 14px 4px color-mix(in srgb, var(--color-marigold-bright) 75%, transparent); opacity: 0; }
+
+/* Hidden until their moment in the intro */
+.device-stage.is-intro :is(.screen-page, .stage-phone, .arrow-label) { opacity: 0; }
+.device-stage.is-intro .stage-arrow path { stroke-dashoffset: 1; }
+.intro-pending .device-stage :is(.screen-page, .stage-phone, .stage-arrow, .arrow-label) { opacity: 0; }
+
+/* Header and hero text rise into place (CSS only, so it runs even if the script fails) */
+.intro-play .header-inner > *,
+.intro-play .hero-copy > * > * { animation: rise 700ms var(--ease-out-expo) backwards; }
+.intro-play .header-inner > * { animation-duration: 600ms; }
+.intro-play .hero-heading h1 { animation-delay: 80ms; }
+.intro-play .hero-heading .gold-rule { transform-origin: left; animation: draw-rule 700ms var(--ease-out-expo) 300ms backwards; }
+.intro-play .hero-body .lead { animation-delay: 220ms; }
+.intro-play .hero-body .button-pair { animation-delay: 300ms; }
+.intro-play .hero-body .price-line { animation-delay: 380ms; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+@keyframes draw-rule { from { transform: scaleX(0); } }

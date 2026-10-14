@@ -11,7 +11,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Instrument+Sans:wght@400;500;600&display=swap">
-  <script>document.documentElement.classList.add("js");</script>
+  <script>document.documentElement.classList.add("js");
+    // CR-012: the first Home visit in a browser session plays the intro.
+    try {
+      if (!sessionStorage.getItem("mainstreet_intro") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.documentElement.classList.add("intro-pending", "intro-play");
+        setTimeout(function () { document.documentElement.classList.remove("intro-pending"); }, 4000);
+      }
+    } catch (err) {}</script>
   <link rel="stylesheet" href="/style.css">
   <script src="/script.js" defer></script>
 </head>
@@ -42,6 +49,7 @@
     <div class="first-screen">
     <section data-section="hero" class="hero" data-hero>
       <div class="container hero-grid">
+        <div class="hero-copy">
         <div class="hero-heading">
           <h1>Websites for <span class="highlight">local businesses</span> in San Diego.</h1>
           <div class="gold-rule" aria-hidden="true"></div>
@@ -54,29 +62,65 @@
           </div>
           <p class="price-line">$60 the first month, then $45 a month. <a href="/offerings.html">See full pricing</a></p>
         </div>
+        </div>
+        <!-- CR-012: device stage. Decorative; the storefronts below name the example sites. -->
+        <div class="device-stage" data-stage aria-hidden="true">
+          <div class="stage-ambient"><span class="is-on" style="background-image: url(/images/work/showcase/restaurant-ambient.jpg)"></span><span></span></div>
+          <p class="stage-chip"><span class="chip-steps"><span class="chip-pill"></span><b>Sketch</b><b>Design</b><b>Live</b></span><span class="chip-now"><i></i><span data-now>Concept restaurant</span></span></p>
+          <div class="device-laptop stage-laptop">
+            <div class="device-screen" data-screen="desktop">
+              <div class="screen-page is-on"><img src="/images/work/showcase/restaurant-desktop.jpg" alt="" width="1280" height="1222" fetchpriority="high"></div>
+              <!-- Intro: a wireframe of the concept restaurant site, in its own 1280 x 800 layout -->
+              <svg class="wire" viewBox="0 0 1280 800" focusable="false">
+                <g style="--d: 0"><rect class="f-banner" x="0" y="0" width="1280" height="28"/></g>
+                <g style="--d: 1"><rect class="f-hero" x="0" y="28" width="1280" height="640"/><path class="x" d="M0 28 1280 668M1280 28 0 668"/></g>
+                <g style="--d: 2"><rect class="f-light" x="48" y="46" width="139" height="32" rx="4"/><rect class="f-light" x="900" y="56" width="43" height="12" rx="6"/><rect class="f-light" x="971" y="56" width="34" height="12" rx="6"/><rect class="f-light" x="1033" y="56" width="66" height="12" rx="6"/><rect class="f-gold" x="1127" y="40" width="105" height="44" rx="22"/></g>
+                <g style="--d: 3"><rect class="f-glass" x="48" y="267" width="179" height="30" rx="15"/></g>
+                <g class="wire-drag" style="--d: 4"><rect class="f-light" x="48" y="322" width="560" height="62" rx="8"/><rect class="f-light" x="48" y="398" width="430" height="62" rx="8"/></g>
+                <g style="--d: 5"><rect class="f-dim" x="48" y="490" width="520" height="14" rx="7"/><rect class="f-dim" x="48" y="514" width="380" height="14" rx="7"/></g>
+                <g style="--d: 6"><rect class="f-gold" x="48" y="554" width="156" height="50" rx="25"/><rect class="f-line" x="216" y="554" width="162" height="50" rx="25"/></g>
+                <g style="--d: 7"><rect class="f-ink" x="48" y="744" width="170" height="44" rx="6"/></g>
+              </svg>
+              <span class="select-box"><i></i><i></i><i></i><i></i></span>
+              <span class="render-line"></span>
+              <span class="cursor"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 2l16 9.5-7 1.6L9.6 20z"/></svg><span>Mainstreet</span></span>
+            </div>
+          </div>
+          <div class="device-phone stage-phone">
+            <div class="device-screen" data-screen="phone">
+              <div class="screen-page is-on"><img src="/images/work/showcase/restaurant-phone.jpg" alt="" width="390" height="1762"></div>
+            </div>
+          </div>
+          <svg class="stage-arrow" viewBox="0 0 160 150" focusable="false"><path pathLength="1" d="M150 6C138 60 96 92 22 118"/><path pathLength="1" d="M44 98 20 119l31 6"/></svg>
+          <span class="arrow-label">Our work</span>
+        </div>
       </div>
     </section>
 
     <section data-section="examples" class="dusk-band" aria-label="Example sites and key facts">
       <div class="container street">
         <div class="street-scroll" role="region" aria-label="Example sites">
-        <ul class="storefront-street">
-          <li class="storefront">
-            <!-- [NEEDS ASSET: example restaurant websites (demo sites)] -->
-            <div class="awning" aria-hidden="true"></div>
-            <div class="storefront-body"><div class="storefront-window"><img src="/images/work/restaurant-desktop.jpg" alt="Example: concept restaurant site by Mainstreet Sites SD (not a real business)" width="1920" height="1200"><span class="window-caption">Example: concept restaurant</span></div></div>
-          </li>
-          <li class="storefront">
-            <!-- [NEEDS ASSET: example barbershop website (demo site)] -->
-            <div class="awning" aria-hidden="true"></div>
-            <div class="storefront-body"><div class="storefront-window"><img src="/images/work/barber-desktop.jpg" alt="Example: concept barbershop site by Mainstreet Sites SD (not a real business)" width="1920" height="1200"><span class="window-caption">Example: concept barbershop</span></div></div>
-          </li>
-          <li class="storefront">
+        <ul class="storefront-street" data-carousel>
+          <li class="storefront" data-site="bakery" data-label="bakery">
             <!-- [NEEDS ASSET: example bakery website (demo site)] -->
             <div class="awning" aria-hidden="true"></div>
-            <div class="storefront-body"><div class="storefront-window"><img src="/images/work/bakery-desktop.jpg" alt="Example: concept bakery site by Mainstreet Sites SD (not a real business)" width="1920" height="1200"><span class="window-caption">Example: concept bakery</span></div></div>
+            <div class="storefront-body"><div class="storefront-window"><span class="window-scroll"><img src="/images/work/showcase/bakery-desktop.jpg" alt="Example: concept bakery site by Mainstreet Sites SD (not a real business)" width="1280" height="1222"></span><span class="window-tag" aria-hidden="true"></span><span class="window-progress" aria-hidden="true"><i></i></span><span class="window-caption">Example: concept bakery</span></div></div>
+          </li>
+          <li class="storefront is-now" data-site="restaurant" data-label="restaurant">
+            <!-- [NEEDS ASSET: example restaurant websites (demo sites)] -->
+            <div class="awning" aria-hidden="true"></div>
+            <div class="storefront-body"><div class="storefront-window"><span class="window-scroll"><img src="/images/work/showcase/restaurant-desktop.jpg" alt="Example: concept restaurant site by Mainstreet Sites SD (not a real business)" width="1280" height="1222"></span><span class="window-tag" aria-hidden="true"></span><span class="window-progress" aria-hidden="true"><i></i></span><span class="window-caption">Example: concept restaurant</span></div></div>
+          </li>
+          <li class="storefront is-next" data-site="barber" data-label="barbershop">
+            <!-- [NEEDS ASSET: example barbershop website (demo site)] -->
+            <div class="awning" aria-hidden="true"></div>
+            <div class="storefront-body"><div class="storefront-window"><span class="window-scroll"><img src="/images/work/showcase/barber-desktop.jpg" alt="Example: concept barbershop site by Mainstreet Sites SD (not a real business)" width="1280" height="1222"></span><span class="window-tag" aria-hidden="true"></span><span class="window-progress" aria-hidden="true"><i></i></span><span class="window-caption">Example: concept barbershop</span></div></div>
           </li>
         </ul>
+        </div>
+        <div class="street-controls" data-controls hidden>
+          <span class="street-dots" aria-hidden="true"><i class="is-on"></i><i></i><i></i></span>
+          <button class="street-pause" type="button" data-pause aria-label="Pause the example sites"><span class="pause-icon" aria-hidden="true"></span><span data-pause-label>Pause</span></button>
         </div>
         <ul class="fact-lines">
           <li><strong>Demo first.</strong> See your site before you decide.</li>
