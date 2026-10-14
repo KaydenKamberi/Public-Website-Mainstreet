@@ -76,3 +76,4 @@ Every **7 s** the showcase moves to the next concept site: restaurant → barber
 | D5 | Restaurant goes in the middle storefront and starts as "Now showing", so the storefront order becomes bakery, restaurant, barbershop. | Yes |
 | D6 | Name the new taps `body-showcase` (a storefront was picked) and `body-pause`, so they show up on the hub's Marketing page. The hub already accepts any valid name. | Yes |
 | D7 | Figma for client sites stays as approved (its own CR per client). | No change |
+| D8 | Built: the hero heading tops out at 68 px (`--text-hero-split`) beside the device stage on computers, instead of 74 px. | Confirmed by Kevin, 2026-10-14: "keep the 68px" |
