@@ -483,7 +483,7 @@ Tell visitors exactly what information the contact form collects, why, and how t
 
 - File: `privacy.html`. Linked from the footer on every page and from the contact form's consent checkbox. Not in the main navigation.
 - Heading: Privacy Policy
-- Effective date: the date the site launches `[NEEDS CONTENT: effective date, set at launch]`
+- Effective date: October 14, 2026 (set by Kevin on 2026-10-14, the launch date)
 
 ## Draft Wording
 
@@ -585,8 +585,7 @@ Unresolved items may remain during planning but must be resolved before the phas
 - ~~Business phone number~~: resolved by CR-007: (619) 786-7135.
 - `[NEEDS CONTENT: student approval of the 9 drafted info documents, including each non-restaurant "Your website will include" list]`
   - Must be resolved before: Phase 4
-- `[NEEDS CONTENT: Privacy Policy effective date, set at launch]`
-  - Must be resolved before: Phase 6
+- ~~Privacy Policy effective date~~: resolved 2026-10-14 by Kevin: October 14, 2026.
 - `[NEEDS CONTENT: customer reviews or testimonials (none yet)]`
   - Must be resolved before: Phase 6 (resolved by confirming the site launches with no reviews section)
 
