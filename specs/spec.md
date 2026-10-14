@@ -2,7 +2,7 @@
 
 ## Specification Status
 
-`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions. Updated 2026-10-08 by CR-003: wording for all business types, slimmer footer with payment methods, closing band refresh. Updated 2026-10-08 by CR-002: design polish, custom section images, concept sites, work wall, reviews section (hidden until real reviews), 404 page. Updated 2026-10-09 by CR-006 (location and links on the contact form, matching the hub's intake contract v2), CR-007 (business phone number), and CR-008 ("Send again" and the hub's answers in the admin). Updated 2026-10-13 by CR-009: no database on this site; it passes each contact form straight to the team hub, and the admin, backups and analytics live in the hub. Updated 2026-10-13 by CR-010: visits and each lead's source go to the hub's Marketing page; the source can also be the referring site (Google, Instagram, …). Updated 2026-10-13 by CR-011: taps, sections reached, time on page, form starts and device are counted for the hub's Marketing page.
+`APPROVED` by Kevin on 2026-09-29. Updated 2026-10-01: Cheyenne joined the team (About page, Privacy Policy). Updated 2026-10-08 by CR-001: $45 a month, payment methods, reservations service, Day to Dusk build decisions. Updated 2026-10-08 by CR-003: wording for all business types, slimmer footer with payment methods, closing band refresh. Updated 2026-10-08 by CR-002: design polish, custom section images, concept sites, work wall, reviews section (hidden until real reviews), 404 page. Updated 2026-10-09 by CR-006 (location and links on the contact form, matching the hub's intake contract v2), CR-007 (business phone number), and CR-008 ("Send again" and the hub's answers in the admin). Updated 2026-10-13 by CR-009: no database on this site; it passes each contact form straight to the team hub, and the admin, backups and analytics live in the hub. Updated 2026-10-13 by CR-010: visits and each lead's source go to the hub's Marketing page; the source can also be the referring site (Google, Instagram, …). Updated 2026-10-13 by CR-011: taps, sections reached, time on page, form starts and device are counted for the hub's Marketing page. Updated 2026-10-14 by CR-012: the Home hero gets a "sketch to live" device stage (a laptop and phone showing the concept sites), and the storefronts become a synced carousel with a Pause control.
 
 This document defines the requirements for this student's business website.
 
@@ -204,8 +204,8 @@ Lead text under the heading: "**Mainstreet Sites SD builds and manages websites 
 ## Required Content (in this order)
 
 1. **Header:** logo, navigation, header button.
-2. **Hero (Day to Dusk):** heading on the left with the gold rule under it; lead text, button pair, and price line on the right.
-3. **Dusk band with the storefront street:** the day-to-dusk gradient, three storefront cards (example sites in glowing windows, captioned "Example:") and the three fact lines, in marigold-bright labels. Facts only:
+2. **Hero (Day to Dusk):** heading with the gold rule under it, then the lead text, button pair, and price line, on the left; the **device stage** on the right (CR-012): a laptop and phone showing the concept sites. The first time per browser session it builds itself from a sketch ("Sketch → Design → Live"), then it moves through the concept sites. A hand-drawn arrow labeled "Our work" points down to the storefronts. Below 1280 px the device stage sits under the price line.
+3. **Dusk band with the storefront street:** the day-to-dusk gradient, three storefront cards (example sites in glowing windows, captioned "Example:") and the three fact lines, in marigold-bright labels. The storefronts are synced with the device stage (CR-012): the center one shows the site on screen ("Now showing"), the right one is "Up next", and they move one place every 7 seconds. A storefront can be picked by click, tap, swipe or keyboard, and a Pause control stops the movement. Facts only:
    - "**Demo first.** See your site before you decide."
    - "**You own it.** Your website stays yours."
    - "**Updates included.** Managed every month."
@@ -238,8 +238,10 @@ Lead text under the heading: "**Mainstreet Sites SD builds and manages websites 
 - The business name "Mainstreet Sites SD" is visible in the header without scrolling on a 375-pixel-wide screen.
 - The primary heading reads "Websites for local businesses in San Diego." with "local businesses" in the marigold-text color.
 - The lead text starts with "Mainstreet Sites SD builds and manages websites for local businesses" in bold and mentions family-owned restaurants.
-- At 1280 px and wider, the heading is on the left and the lead text and buttons on the right, with the dusk band and storefront street below; below 1280 px they stack, and on a 375 px phone and the storefronts scroll sideways inside their row.
-- The two hero buttons are the same height and share a left edge with the heading on phone and tablet, and with the lead text on desktop.
+- At 1280 px and wider, the heading, lead text and buttons are on the left and the device stage on the right, with the dusk band and storefront street below; below 1280 px they stack with the device stage under the price line, and on a 375 px phone the storefronts show as a carousel (the current one centered, the others peeking at the sides) (CR-012).
+- The two hero buttons are the same height and share a left edge with the heading.
+- The device stage's intro plays once per browser session; with reduced motion or without JavaScript, the finished laptop, phone and storefronts show and nothing moves (CR-012).
+- While the showcase moves, the Pause control stops it, and it also pauses while a storefront is hovered or keyboard-focused, when it is off screen, and when the tab is hidden (CR-012).
 - The dusk band shows exactly the three approved fact lines.
 - The "Who it's for" line lists the nine business types from the contact form.
 - No more than 2 buttons are visible on any screen, not counting the header button.
@@ -542,6 +544,7 @@ Shown in the private team hub's **Requests → Marketing** page (CR-009, CR-010;
   - Each page view collects taps (zone + target, for example `hero-contact`), sections reached (half on screen, once each, named by `data-section`), time on screen (`0-10s` … `5m-plus`), form steps (`start`, `sent`, `error`), and the device (phone, tablet or computer).
   - It sends them as one batch when the visitor leaves or switches apps. This site's server checks the batch (known pages, types and names, up to 60 events, no bots, 30 batches a minute per visitor), signs it, and passes it to `POST <HUB_URL>/api/intake/events`. Failures are dropped.
   - Nothing typed is ever sent.
+  - CR-012 adds two taps on Home: `body-showcase` (a storefront was picked) and `body-pause` (the Pause control).
 - `[NEEDS DECISION: which marketing campaign sources to track with utm_source]` Do not invent campaign sources the student has not selected.
 
 ## Acceptance Criteria
