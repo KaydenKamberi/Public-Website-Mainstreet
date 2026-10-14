@@ -479,7 +479,10 @@ document.querySelectorAll("[data-year]").forEach((el) => {
 (function showcase() {
   const stage = document.querySelector("[data-stage]");
   const list = document.querySelector("[data-carousel]");
-  if (!stage || !list || !stage.animate) return;
+  if (!stage || !list || !stage.animate) {
+    document.documentElement.classList.remove("intro-pending");
+    return;
+  }
 
   const street = list.closest(".street");
   const items = [...list.children];
@@ -509,6 +512,7 @@ document.querySelectorAll("[data-year]").forEach((el) => {
   let holding = false;
   let onScreen = true;
   let nowFrame = 0;
+  let introPlaying = false;
 
   // Each screen gets a second page so a new site can fade in over the old one.
   [laptop, phone].forEach((screen) => {
@@ -633,7 +637,7 @@ document.querySelectorAll("[data-year]").forEach((el) => {
 
   function go(index, picked) {
     const next = (index + SITES.length) % SITES.length;
-    if (next === current) return;
+    if (next === current || introPlaying) return;
     stopLoop();
     current = next;
     const li = SITES[current];
@@ -704,10 +708,118 @@ document.querySelectorAll("[data-year]").forEach((el) => {
   addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(measure, 1000); });
   if (controls && !reduce) controls.hidden = false;
 
+  // ---------- Intro: Sketch → Design → Live (once per browser session) ----------
+  const SETTLE = "cubic-bezier(.22, 1.25, .36, 1)";
+  const wait = (ms) => new Promise((done) => setTimeout(done, ms));
+
+  function setStep(step, index) {
+    stage.dataset.step = step;
+    stage.style.setProperty("--step", index);
+  }
+
+  async function intro() {
+    const cursor = stage.querySelector(".cursor");
+    const select = stage.querySelector(".select-box");
+    const drag = stage.querySelector(".wire-drag");
+    const line = stage.querySelector(".render-line");
+    const wire = stage.querySelector(".wire");
+    const phoneFrame = stage.querySelector(".stage-phone");
+    const page = laptop.querySelector(".screen-page.is-on");
+    const phonePage = phone.querySelector(".screen-page.is-on");
+    try { sessionStorage.setItem("mainstreet_intro", "1"); } catch (err) { /* private mode */ }
+    stage.classList.add("is-intro");
+    document.documentElement.classList.remove("intro-pending");
+    wire.querySelectorAll("rect, path").forEach((shape) => shape.setAttribute("pathLength", "1"));
+    setStep("0", 0);
+
+    // 1. Sketch: the wireframe draws itself.
+    await wait(450);
+    setStep("sketch", 0);
+    await wait(500);
+
+    // A designer's cursor grabs the headline and drops it into place.
+    const T = 1700;
+    cursor.animate([
+      { opacity: 0, transform: "translate(96cqw, 92cqh)" },
+      { opacity: 1, offset: 0.1 },
+      { transform: "translate(36cqw, 50cqh)", offset: 0.36, easing: "cubic-bezier(.3, 0, .2, 1)" },
+      { transform: "translate(36cqw, 50cqh) scale(.88)", offset: 0.42 },
+      { transform: "translate(32.4cqw, 46.25cqh) scale(.88)", offset: 0.7, easing: GLIDE },
+      { opacity: 1, transform: "translate(32.4cqw, 46.25cqh)", offset: 0.78 },
+      { opacity: 1, transform: "translate(32.4cqw, 46.25cqh)" },
+    ], { duration: T, easing: EXPO, fill: "forwards" });
+    select.animate([
+      { opacity: 0, offset: 0 },
+      { opacity: 0, transform: "translate(3.6cqw, 3.75cqh)", offset: 0.38 },
+      { opacity: 1, transform: "translate(3.6cqw, 3.75cqh)", offset: 0.42 },
+      { opacity: 1, transform: "translate(0, 0)", offset: 0.7, easing: GLIDE },
+      { opacity: 1, transform: "translate(0, 0)", offset: 0.9 },
+      { opacity: 0, transform: "translate(0, 0)" },
+    ], { duration: T, fill: "forwards" });
+    drag.animate([
+      { transform: "translate(46px, 30px)", offset: 0 },
+      { transform: "translate(46px, 30px)", offset: 0.42, easing: SETTLE },
+      { transform: "translate(0, 0)", offset: 0.72 },
+      { transform: "translate(0, 0)" },
+    ], { duration: T, fill: "forwards" });
+    await wait(T * 0.78);
+
+    // 2. Design: the blocks take on the site's colors.
+    setStep("design", 1);
+    await wait(750);
+
+    // 3. Live: the finished site renders top to bottom.
+    setStep("live", 2);
+    page.style.opacity = 1;
+    const sweep = { duration: 900, easing: GLIDE };
+    const reveal = page.animate([{ clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0 0)" }], sweep);
+    line.animate([{ opacity: 1, transform: "translateY(0)" }, { opacity: 1, transform: "translateY(100cqh)", offset: 0.96 }, { opacity: 0, transform: "translateY(100cqh)" }], sweep);
+    cursor.animate([
+      { opacity: 1, transform: "translate(32.4cqw, 46.25cqh)" },
+      { opacity: 0, transform: "translate(70cqw, 112cqh)" },
+    ], { duration: 900, easing: "cubic-bezier(.5, 0, .75, 0)", fill: "forwards" });
+    await reveal.finished;
+    wire.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: "forwards" });
+
+    // 4. The phone drives in beside the laptop.
+    phonePage.style.opacity = 1;
+    phoneFrame.style.opacity = 1;
+    phoneFrame.animate([
+      { opacity: 0, transform: "translate(55%, 18%) rotate(9deg)" },
+      { opacity: 1, offset: 0.35 },
+      { opacity: 1, transform: "none" },
+    ], { duration: 1100, easing: SETTLE, fill: "backwards" });
+    await wait(500);
+
+    // 5. Show what's on screen, and point at the storefronts.
+    stage.classList.remove("is-intro");
+    stage.removeAttribute("data-step");
+    [page, phonePage, phoneFrame].forEach((el) => { el.style.opacity = ""; });
+    stage.querySelectorAll(".stage-arrow path").forEach((path, i) => {
+      path.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], { duration: i ? 280 : 700, delay: i ? 640 : 0, easing: i ? "ease-out" : GLIDE, fill: "backwards" });
+    });
+    stage.querySelector(".arrow-label").animate(
+      [{ opacity: 0, transform: "translateY(8px) rotate(-4deg)" }, { opacity: 1, transform: "rotate(-4deg)" }],
+      { duration: 600, delay: 450, easing: EXPO, fill: "backwards" }
+    );
+    await wait(800);
+  }
+
   // Starts once the stage is on screen (on phones it sits under the buttons).
   function begin() {
     preload();
-    startLoop(600);
+    let first = false;
+    try { first = !sessionStorage.getItem("mainstreet_intro"); } catch (err) { first = false; }
+    if (reduce || !first) {
+      document.documentElement.classList.remove("intro-pending");
+      startLoop(600);
+      return;
+    }
+    introPlaying = true;
+    intro().then(() => {
+      introPlaying = false;
+      startLoop(300);
+    });
   }
 
   if ("IntersectionObserver" in window) {

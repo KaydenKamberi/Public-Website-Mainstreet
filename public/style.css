@@ -1794,3 +1794,88 @@ main:has(> .closing-band:last-child) + .site-footer {
 @media (prefers-reduced-motion: reduce) {
   .storefront-window::before, .storefront-window .window-scroll img, .window-tag { transition: none; }
 }
+
+/* ===== CR-012: intro, "Sketch → Design → Live" (once per browser session) ===== */
+
+.stage-laptop .device-screen { container-type: size; }
+
+/* Chip steps: a forest pill slides to the current step */
+.chip-now, .chip-steps { transition: opacity 450ms var(--ease), transform 600ms var(--ease-settle); }
+.chip-steps {
+  position: relative;
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 3px;
+  border: 1px solid var(--color-line-soft);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+  box-shadow: var(--shadow-card);
+  opacity: 0;
+  transform: scale(0.9);
+}
+.chip-steps b { position: relative; z-index: 1; width: 72px; color: var(--color-subtle); font-weight: var(--weight-display-strong); text-align: center; transition: color 350ms var(--ease); }
+.chip-pill { position: absolute; top: 3px; bottom: 3px; left: 3px; width: 72px; border-radius: var(--radius-pill); background: var(--color-forest); transform: translateX(calc(var(--step, 0) * 72px)); transition: transform 550ms var(--ease-settle); }
+.device-stage[data-step="sketch"] .chip-steps b:nth-of-type(1),
+.device-stage[data-step="design"] .chip-steps b:nth-of-type(2),
+.device-stage[data-step="live"] .chip-steps b:nth-of-type(3) { color: var(--color-paper); }
+.device-stage.is-intro .chip-steps { opacity: 1; transform: none; }
+.device-stage.is-intro .chip-now { opacity: 0; transform: scale(0.9); }
+
+/* Wireframe: outlines draw themselves, then fill with the concept site's colors */
+.wire { position: absolute; inset: 0; z-index: 1; display: none; width: 100%; height: 100%; }
+.device-stage.is-intro .wire { display: block; }
+.wire :is(rect, path) {
+  fill: var(--color-paper);
+  fill-opacity: 0;
+  stroke: color-mix(in srgb, var(--color-forest) 55%, transparent);
+  stroke-width: 3;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: fill 600ms var(--ease), stroke 500ms var(--ease);
+  animation: wire-draw 600ms var(--ease-out-expo) calc(var(--d) * 75ms) both paused, wire-fill 500ms var(--ease) calc(var(--d) * 75ms + 280ms) both paused;
+}
+.wire .f-hero { fill: color-mix(in srgb, var(--color-line-soft) 60%, var(--color-cream)); }
+.wire .x { fill: none; stroke: color-mix(in srgb, var(--color-forest) 28%, transparent); }
+.device-stage:not([data-step="0"]) .wire :is(rect, path) { animation-play-state: running; }
+@keyframes wire-draw { to { stroke-dashoffset: 0; } }
+@keyframes wire-fill { to { fill-opacity: 1; } }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire :is(rect, path) { stroke: transparent; }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire :is(.f-banner, .f-ink) { fill: var(--concept-ink); }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire .f-hero { fill: var(--concept-photo); }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire .f-light { fill: var(--color-paper); }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire .f-gold { fill: var(--color-marigold); }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire .f-glass { fill: var(--concept-glass); }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire .f-dim { fill: var(--concept-dim); }
+.device-stage:is([data-step="design"], [data-step="live"]) .wire .f-line { fill: var(--concept-photo); stroke: color-mix(in srgb, var(--color-paper) 80%, transparent); }
+.wire-drag { transform: translate(46px, 30px); }
+
+/* Selection box, designer cursor, render line */
+.select-box { position: absolute; top: 39%; left: 2.8%; z-index: 2; width: 46%; height: 19.8%; border: 1.5px solid var(--color-marigold); opacity: 0; transform: translate(3.6cqw, 3.75cqh); }
+.select-box i { position: absolute; width: 7px; height: 7px; border: 1.5px solid var(--color-marigold); background: var(--color-paper); }
+.select-box i:nth-child(1) { top: -4px; left: -4px; }
+.select-box i:nth-child(2) { top: -4px; right: -4px; }
+.select-box i:nth-child(3) { bottom: -4px; left: -4px; }
+.select-box i:nth-child(4) { right: -4px; bottom: -4px; }
+.cursor { position: absolute; top: 0; left: 0; z-index: 4; display: flex; align-items: flex-start; opacity: 0; pointer-events: none; }
+.cursor svg { width: clamp(13px, 3cqw, 20px); fill: var(--color-forest); stroke: var(--color-paper); stroke-width: 1.6; stroke-linejoin: round; filter: drop-shadow(0 2px 3px color-mix(in srgb, var(--color-night) 30%, transparent)); }
+.cursor > span { margin: clamp(10px, 2.6cqw, 16px) 0 0 -2px; padding: 3px var(--space-2); border-radius: var(--radius-pill); background: var(--color-marigold); color: var(--color-ink); font-size: clamp(9px, 1.7cqw, 12px); font-weight: var(--weight-display-strong); white-space: nowrap; }
+.render-line { position: absolute; top: 0; right: 0; left: 0; z-index: 3; height: 2px; background: var(--color-marigold-bright); box-shadow: 0 0 14px 4px color-mix(in srgb, var(--color-marigold-bright) 75%, transparent); opacity: 0; }
+
+/* Hidden until their moment in the intro */
+.device-stage.is-intro :is(.screen-page, .stage-phone, .arrow-label) { opacity: 0; }
+.device-stage.is-intro .stage-arrow path { stroke-dashoffset: 1; }
+.intro-pending .device-stage :is(.screen-page, .stage-phone, .stage-arrow, .arrow-label) { opacity: 0; }
+
+/* Header and hero text rise into place (CSS only, so it runs even if the script fails) */
+.intro-play .header-inner > *,
+.intro-play .hero-copy > * > * { animation: rise 700ms var(--ease-out-expo) backwards; }
+.intro-play .header-inner > * { animation-duration: 600ms; }
+.intro-play .hero-heading h1 { animation-delay: 80ms; }
+.intro-play .hero-heading .gold-rule { transform-origin: left; animation: draw-rule 700ms var(--ease-out-expo) 300ms backwards; }
+.intro-play .hero-body .lead { animation-delay: 220ms; }
+.intro-play .hero-body .button-pair { animation-delay: 300ms; }
+.intro-play .hero-body .price-line { animation-delay: 380ms; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+@keyframes draw-rule { from { transform: scaleX(0); } }
