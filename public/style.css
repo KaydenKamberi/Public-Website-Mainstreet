@@ -785,15 +785,16 @@ main:has(> .closing-band:last-child) + .site-footer {
   background: repeating-linear-gradient(90deg, var(--awning-color) 0 calc(100% / 15), var(--color-cream) calc(100% / 15) calc(200% / 15));
 }
 
-.storefront:nth-child(1) {
+/* Each site keeps its awning color as the storefronts move (CR-012). */
+.storefront[data-site="restaurant"] {
   --awning-color: var(--color-forest);
 }
 
-.storefront:nth-child(2) {
+.storefront[data-site="barber"] {
   --awning-color: var(--color-marigold);
 }
 
-.storefront:nth-child(3) {
+.storefront[data-site="bakery"] {
   --awning-color: var(--color-brick);
 }
 
@@ -818,7 +819,8 @@ main:has(> .closing-band:last-child) + .site-footer {
   padding-top: 54%;
 }
 
-.storefront:nth-child(2) .storefront-window::before {
+/* The "Now showing" store is the raised one (CR-012). */
+.storefront.is-now .storefront-window::before {
   padding-top: calc(54% + var(--storefront-lift));
 }
 
@@ -1694,4 +1696,101 @@ main:has(> .closing-band:last-child) + .site-footer {
 
 @media (prefers-reduced-motion: reduce) {
   .chip-now i::after { animation: none; }
+}
+
+/* ===== CR-012: storefronts synced with the device stage ===== */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.storefront-window { overflow: hidden; }
+.storefront-window::before { transition: padding-top 800ms var(--ease-glide); }
+.window-scroll { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+.storefront-window .window-scroll img { position: static; display: block; height: auto; transition: opacity 600ms var(--ease), filter 600ms var(--ease); }
+.window-caption { z-index: 2; }
+
+/* A button over each window (added by the script) shows that site in the laptop. */
+.window-pick { position: absolute; inset: 0; z-index: 3; width: 100%; padding: 0; border: 0; border-radius: inherit; background: none; cursor: pointer; }
+
+.is-showcase .storefront:not(.is-now) .window-scroll img { opacity: 0.5; filter: saturate(0.6); }
+.is-showcase .storefront:not(.is-now) .storefront-window { box-shadow: 0 0 var(--space-3) 0 color-mix(in srgb, var(--color-marigold-bright) 14%, transparent); }
+.is-showcase .storefront:not(.is-now) .storefront-window:hover .window-scroll img { opacity: 0.85; filter: none; }
+
+/* "Now showing" and "Up next" tags, and the line that fills until the next switch */
+.window-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-1) 10px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-night) 84%, transparent);
+  color: var(--color-night-text);
+  font-size: 12px;
+  font-weight: var(--weight-display-strong);
+  line-height: 1.2;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity var(--duration) var(--ease), transform 500ms var(--ease-settle);
+}
+
+.is-showcase .is-now .window-tag,
+.is-moving .is-next .window-tag { opacity: 1; transform: none; }
+.is-now .window-tag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--color-marigold-bright); }
+.is-now .window-tag::after { content: "Now showing"; }
+.is-next .window-tag::after { content: "Up next →"; }
+
+.window-progress { position: absolute; top: 0; right: 0; left: 0; z-index: 2; height: 3px; background: color-mix(in srgb, var(--color-night) 35%, transparent); opacity: 0; transition: opacity 300ms var(--ease); }
+.window-progress i { display: block; height: 100%; background: var(--color-marigold); transform: scaleX(0); transform-origin: left; }
+.is-moving .is-now .window-progress { opacity: 1; }
+
+/* Pause control: icon + text, no pill (not counted as a button) */
+.street-controls { display: flex; align-items: center; gap: var(--space-3); }
+.street-controls[hidden] { display: none; }
+.street-dots { display: flex; gap: 6px; }
+.street-dots i { width: 6px; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--color-night-text) 30%, transparent); transition: width 500ms var(--ease-settle), background-color var(--duration) var(--ease); }
+.street-dots i.is-on { width: 18px; background: var(--color-marigold-bright); }
+.street-pause {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: none;
+  color: var(--color-night-text);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: var(--weight-display-strong);
+  cursor: pointer;
+}
+.street-pause:hover { color: var(--color-marigold-bright); }
+.pause-icon { width: 10px; height: 12px; border-inline: 3px solid currentColor; }
+.street-pause.is-paused .pause-icon { width: 0; height: 0; border-block: 6px solid transparent; border-inline: 10px solid currentColor; border-right: 0; }
+
+@media (max-width: 767px) {
+  /* With the script: the current store centered, the others peeking at the edges. */
+  .js .street-scroll { padding: 0; overflow: hidden; scroll-snap-type: none; }
+  .js .storefront-street { gap: var(--space-3); touch-action: pan-y; }
+  .js .storefront { flex: 0 0 74%; }
+  .js .storefront:first-child { margin-left: calc(13% - 74% - var(--space-3)); }
+  .street-controls { justify-content: center; }
+}
+
+@media (min-width: 1280px) {
+  .street-controls { grid-column: 4; grid-row: 1; align-self: start; margin-top: var(--space-6); }
+  .street .fact-lines { grid-column: 4; grid-row: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storefront-window::before, .storefront-window .window-scroll img, .window-tag { transition: none; }
 }

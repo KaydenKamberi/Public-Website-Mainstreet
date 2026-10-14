@@ -79,23 +79,27 @@
     <section data-section="examples" class="dusk-band" aria-label="Example sites and key facts">
       <div class="container street">
         <div class="street-scroll" role="region" aria-label="Example sites">
-        <ul class="storefront-street">
-          <li class="storefront">
-            <!-- [NEEDS ASSET: example restaurant websites (demo sites)] -->
-            <div class="awning" aria-hidden="true"></div>
-            <div class="storefront-body"><div class="storefront-window"><img src="/images/work/restaurant-desktop.jpg" alt="Example: concept restaurant site by Mainstreet Sites SD (not a real business)" width="1920" height="1200"><span class="window-caption">Example: concept restaurant</span></div></div>
-          </li>
-          <li class="storefront">
-            <!-- [NEEDS ASSET: example barbershop website (demo site)] -->
-            <div class="awning" aria-hidden="true"></div>
-            <div class="storefront-body"><div class="storefront-window"><img src="/images/work/barber-desktop.jpg" alt="Example: concept barbershop site by Mainstreet Sites SD (not a real business)" width="1920" height="1200"><span class="window-caption">Example: concept barbershop</span></div></div>
-          </li>
-          <li class="storefront">
+        <ul class="storefront-street" data-carousel>
+          <li class="storefront" data-site="bakery" data-label="bakery">
             <!-- [NEEDS ASSET: example bakery website (demo site)] -->
             <div class="awning" aria-hidden="true"></div>
-            <div class="storefront-body"><div class="storefront-window"><img src="/images/work/bakery-desktop.jpg" alt="Example: concept bakery site by Mainstreet Sites SD (not a real business)" width="1920" height="1200"><span class="window-caption">Example: concept bakery</span></div></div>
+            <div class="storefront-body"><div class="storefront-window"><span class="window-scroll"><img src="/images/work/showcase/bakery-desktop.jpg" alt="Example: concept bakery site by Mainstreet Sites SD (not a real business)" width="1280" height="1222"></span><span class="window-tag" aria-hidden="true"></span><span class="window-progress" aria-hidden="true"><i></i></span><span class="window-caption">Example: concept bakery</span></div></div>
+          </li>
+          <li class="storefront is-now" data-site="restaurant" data-label="restaurant">
+            <!-- [NEEDS ASSET: example restaurant websites (demo sites)] -->
+            <div class="awning" aria-hidden="true"></div>
+            <div class="storefront-body"><div class="storefront-window"><span class="window-scroll"><img src="/images/work/showcase/restaurant-desktop.jpg" alt="Example: concept restaurant site by Mainstreet Sites SD (not a real business)" width="1280" height="1222"></span><span class="window-tag" aria-hidden="true"></span><span class="window-progress" aria-hidden="true"><i></i></span><span class="window-caption">Example: concept restaurant</span></div></div>
+          </li>
+          <li class="storefront is-next" data-site="barber" data-label="barbershop">
+            <!-- [NEEDS ASSET: example barbershop website (demo site)] -->
+            <div class="awning" aria-hidden="true"></div>
+            <div class="storefront-body"><div class="storefront-window"><span class="window-scroll"><img src="/images/work/showcase/barber-desktop.jpg" alt="Example: concept barbershop site by Mainstreet Sites SD (not a real business)" width="1280" height="1222"></span><span class="window-tag" aria-hidden="true"></span><span class="window-progress" aria-hidden="true"><i></i></span><span class="window-caption">Example: concept barbershop</span></div></div>
           </li>
         </ul>
+        </div>
+        <div class="street-controls" data-controls hidden>
+          <span class="street-dots" aria-hidden="true"><i class="is-on"></i><i></i><i></i></span>
+          <button class="street-pause" type="button" data-pause aria-label="Pause the example sites"><span class="pause-icon" aria-hidden="true"></span><span data-pause-label>Pause</span></button>
         </div>
         <ul class="fact-lines">
           <li><strong>Demo first.</strong> See your site before you decide.</li>

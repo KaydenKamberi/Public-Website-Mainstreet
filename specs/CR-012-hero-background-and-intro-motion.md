@@ -43,9 +43,9 @@ Every **7 s** the showcase moves to the next concept site: restaurant → barber
 - **Return visits:** the intro is skipped (once per session), and the loop starts right away.
 - **Speed:**
   - No libraries (no GSAP). Only the browser's own CSS and Web Animations, transforms and opacity.
-  - Only the first site's images load up front. The other 2 load after the intro.
-  - Images go from 0.87 MB today to 1.1 MB in total.
-- **Accessibility:** the device stage is decorative (hidden from screen readers). The storefronts become buttons named "Example: concept … site (not a real business). Show it in the laptop." Picking one is announced politely ("Now showing the concept … site"). Keyboard focus stays on the storefront that was picked, and focusing one with the keyboard pauses the loop.
+  - The storefront windows use the 3 full-page desktop screenshots (0.64 MB, less than today's 0.87 MB). The laptop and phone start with the restaurant; the other phone screenshots load once the showcase starts.
+  - All showcase images together: 1.1 MB.
+- **Accessibility:** the device stage is decorative (hidden from screen readers). The storefront images keep their "Example: concept … site by Mainstreet Sites SD (not a real business)" alt text. The script adds a button over each window, named "Show the concept … site in the laptop" (the current one is marked `aria-current`). Picking one is announced politely ("Now showing the concept … site."). Keyboard focus stays on the storefront that was picked, and focusing one with the keyboard pauses the loop. Without JavaScript there are no buttons, and the phone row scrolls sideways as before.
 - **Honesty:** every site shown is labelled "concept", as today.
 
 ## 5. Design system additions
