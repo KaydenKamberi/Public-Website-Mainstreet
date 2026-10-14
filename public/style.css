@@ -1709,7 +1709,6 @@ main:has(> .closing-band:last-child) + .site-footer {
   white-space: nowrap;
 }
 
-.storefront-window { overflow: hidden; }
 .storefront-window::before { transition: padding-top 800ms var(--ease-glide); }
 .window-scroll { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
 .storefront-window .window-scroll img { position: static; display: block; height: auto; transition: opacity 600ms var(--ease), filter 600ms var(--ease); }
@@ -1749,7 +1748,7 @@ main:has(> .closing-band:last-child) + .site-footer {
 .is-now .window-tag::after { content: "Now showing"; }
 .is-next .window-tag::after { content: "Up next →"; }
 
-.window-progress { position: absolute; top: 0; right: 0; left: 0; z-index: 2; height: 3px; background: color-mix(in srgb, var(--color-night) 35%, transparent); opacity: 0; transition: opacity 300ms var(--ease); }
+.window-progress { position: absolute; top: 0; right: 0; left: 0; z-index: 2; height: 3px; overflow: hidden; border-radius: var(--space-1) var(--space-1) 0 0; background: color-mix(in srgb, var(--color-night) 35%, transparent); opacity: 0; transition: opacity 300ms var(--ease); }
 .window-progress i { display: block; height: 100%; background: var(--color-marigold); transform: scaleX(0); transform-origin: left; }
 .is-moving .is-now .window-progress { opacity: 1; }
 
