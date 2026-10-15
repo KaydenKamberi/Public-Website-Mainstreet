@@ -1,5 +1,7 @@
 # CLAUDE.md: Mainstreet Sites SD public website
 
+> **New session or new Claude account? Read [`specs/handoff.md`](specs/handoff.md) first:** where we left off, the hub connection, Kevin's working style, and how to run and test.
+
 The public website for Mainstreet Sites SD (mainstreetsitessd.com). Restaurants and other local businesses find us here and fill out the contact form. Team: Kevin (owner), Kayden (co-founder), Cheyenne (team member).
 
 ## Source of truth
