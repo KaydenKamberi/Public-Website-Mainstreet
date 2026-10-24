@@ -26,6 +26,7 @@ The public website for Mainstreet Sites SD (mainstreetsitessd.com). Restaurants 
 ## Stack and where things run
 - Plain HTML, CSS, JavaScript + a small Node.js/Express server. No database (CR-009): the server only passes contact forms to the private team hub. No frameworks or build step unless the spec allows it.
 - Code lives on GitHub; Claude Code is the only thing that edits it. Replit runs it (Secrets, deployment): Git → Pull, then Run. Never let Replit Agent change code.
+- **Hosting (decided by Kevin, 2026-10-24):** this public site moves to **Cloudflare Pages** (CR-013) and the private hub moves to **Railway** (hub CR-014). The hub moves first. Replit keeps running this site until the Cloudflare version is fully tested.
 - Keys and passwords (`INTAKE_SECRET`, hub URL) come from Replit Secrets, never code.
 - The private team hub is a separate repo. This site only talks to it through `POST /api/intake/website` (see spec section 7).
 
