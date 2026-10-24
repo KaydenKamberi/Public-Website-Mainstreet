@@ -147,8 +147,8 @@ async function postToHub(url, payload, label, timeoutMs) {
       signal: AbortSignal.timeout(timeoutMs),
     });
     if (response.status !== 200 && response.status !== 201) {
-      const detail = await response.text().catch(() => "");
-      console.warn(`Hub answered HTTP ${response.status} for ${label}: ${detail.slice(0, 200)}`);
+      // The status only: the hub's reply can repeat what the visitor typed.
+      console.warn(`Hub answered HTTP ${response.status} for ${label}.`);
     }
     return response.status;
   } catch (err) {
