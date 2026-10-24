@@ -2,9 +2,9 @@
 
 | | |
 | --- | --- |
-| **Status** | `DRAFT`, waiting for Kevin's approval. **Nothing is built yet.** The hub moves to Railway first (hub CR-014); this move starts after that. |
+| **Status** | `APPROVED` by Kevin, 2026-10-24, for **D1–D9** (D9 changed: no Replit fallback). **D10 (the domain) is still pending.** Nothing is built yet. The hub moves to Railway first; this move starts after that. |
 | **Requested by** | Kevin, 2026-10-24: "Public site → Cloudflare Pages, Private hub → Railway" (approved hosting decision), and fixes #2–#4 from the public site security check (2026-10-24) left for this move. |
-| **Builds on** | CR-009 (no database, the site only relays to the hub), CR-010 and CR-011 (visits and visitor events to the hub), the hub's intake contract v4, and hub CR-014 (the hub's new Railway address). |
+| **Builds on** | CR-009 (no database, the site only relays to the hub), CR-010 and CR-011 (visits and visitor events to the hub), the hub's intake contract v4, and hub CR-015 (the hub's new Railway address). |
 | **Changes** | `specs/constitution.md` §9 and §10 say the site "must run reliably on Replit" with Node.js and Express. After this CR the pages run on Cloudflare Pages and the form relay runs as **Pages Functions**. |
 | **Does not change** | Any page's words or design, the form's fields and checks, the visitor messages, the honeypot, the intake contract's fields and signatures, or the analytics rules. |
 
@@ -79,14 +79,15 @@ https://:project.pages.dev/*
 
 ## 6. Keep the Replit site live until the new one is fully tested
 
-- The Replit site stays published, connected to the hub, the whole time. Cloudflare starts on its `*.pages.dev` address only.
+- The Replit site stays published, connected to the hub, until the Cloudflare site is live and tested. Cloudflare starts on its `*.pages.dev` address only.
 - **Test checklist on `*.pages.dev`** (Production settings, pointed at the Railway hub):
   - All 5 pages + 404, at 375 px and desktop; the hero animation; `prefers-reduced-motion`
   - The form: JSON and plain post, the special request, missing fields, the honeypot, Turnstile pass and fail (Cloudflare's test keys), the hub saying no, and "try again" not making a duplicate
   - Visits and events reach the hub's Marketing page
   - Headers checked with `curl -I`; no CSP errors in the browser console
-- Only after every check passes: switch the domain (section 7).
-- **Rollback:** point DNS back to Replit (Replit stays published for **7 days** after the switch). Then unpublish Replit and remove `server.js`, `.replit`, and the Express package in a small clean-up PR.
+- Only after every check passes: switch the domain (section 7), then run the same checks once more on the real domain.
+- **No Replit fallback (D9):** as soon as the Cloudflare site is live on the domain and those checks pass, unpublish the Replit site. Then remove `server.js`, `.replit`, and the Express package in a small clean-up PR.
+- ⚠️ With no fallback, a problem found after the switch is fixed forward on Cloudflare: a fix in a PR, or Cloudflare's "Rollback" to an earlier Pages deployment. Git keeps `server.js` in its history if it's ever needed again.
 
 ## 7. Domain and DNS for mainstreetsitessd.com
 
@@ -103,18 +104,18 @@ Then, for every case:
 2. Send `www` to the main address with a redirect rule (one address for Google).
 3. Add both hostnames to the Turnstile widget.
 4. Turn on the rate limiting rule (section 4).
-5. The hub's address (`hub.<domain>`, hub CR-014) is a separate DNS record pointing to Railway. It doesn't affect this site.
+5. The hub's address (`hub.<domain>`, hub CR-015) is a separate DNS record pointing to Railway. It doesn't affect this site.
 
 ## 8. Phases
 
 | Phase | Who | What |
 | --- | --- | --- |
-| **0** | — | Wait for the hub to be live on Railway (hub CR-014) |
+| **0** | — | Wait for the hub to be live on Railway (hub CR-015) |
 | **1** | Kevin (step by step) | Cloudflare account access, a Pages project from this GitHub repo, a Turnstile widget, the secrets and settings (section 2). Answer section 7 |
 | **2** | Claude Code, one branch | `functions/api/*`, `functions/_lib/hub.js`, `public/_headers`, Turnstile on the form, `script.js` changes, the privacy line, `wrangler.toml` (no secrets), local tests with `wrangler pages dev`, a fake hub, and Turnstile test keys |
 | **3** | Kevin + Claude Code | The test checklist on `*.pages.dev` (section 6) |
 | **4** | Kevin (step by step) | Domain and DNS (section 7), the rate limiting rule, HSTS raised to 1 year after a week |
-| **5** | Claude Code | After 7 good days: unpublish Replit, remove `server.js`, `.replit`, and Express; update README, `handoff.md`, `replit.md`, `CLAUDE.md`, and `constitution.md` §9–§10 |
+| **5** | Kevin + Claude Code | Right after the checks pass on the real domain: Kevin unpublishes Replit; Claude Code removes `server.js`, `.replit`, and Express; update README, `handoff.md`, `replit.md`, `CLAUDE.md`, and `constitution.md` §9–§10 |
 
 ## 9. Every place that changes
 
@@ -128,21 +129,21 @@ Then, for every case:
 | `package.json` | `wrangler` as a dev tool for local tests; Express removed in Phase 5 |
 | `server.js`, `.replit` | Kept until Phase 5, then removed |
 | README, `specs/handoff.md`, `replit.md`, `CLAUDE.md`, `specs/constitution.md` | Hosting, settings, how to run and test |
-| Hub repo | Nothing. The intake contract stays v4. The hub's own CR-014 handles its address |
+| Hub repo | Nothing. The intake contract stays v4. The hub's own CR-015 handles its address |
 
 Cost: **$0** (Pages, Functions, Turnstile, and one rate limiting rule are on Cloudflare's free plan). Only the domain costs money, if it isn't bought yet.
 
-## 10. Decisions needing confirmation
+## 10. Decisions (D1–D9 approved by Kevin 2026-10-24; D10 pending)
 
 | # | Question | Recommended |
 | --- | --- | --- |
-| D1 | Where the site runs | Cloudflare Pages + Pages Functions (approved 2026-10-24) |
-| D2 | When | After the hub is live on Railway |
-| D3 | Preview deployments | No `INTAKE_SECRET` on Preview, so pull-request previews can't send to the real hub (their forms show "could not be sent"); full tests use the Production settings on the `*.pages.dev` address before the domain switch |
-| D4 | Rate limits | Turnstile + 1 Cloudflare rule (10 per 10 s on `/api/`) + the binding (5 form sends per 60 s) if Pages supports it + the hub's limit |
-| D5 | Privacy page | Add one line about Cloudflare Turnstile |
-| D6 | The inline "js" script | Allow it by its hash in the CSP (keeps the no-flash load), rather than moving it to a file |
-| D7 | Inline styles | `'unsafe-inline'` for styles only, rather than rewriting the hero's `style="…"` attributes |
-| D8 | HSTS | 5 minutes while testing, then 1 year with `includeSubDomains`; no preload |
-| D9 | Keeping Replit | Published until 7 days after the domain switch, as the rollback |
-| D10 | The domain | ❓ Kevin's answer to section 7 |
+| D1 | Where the site runs | ✅ Cloudflare Pages + Pages Functions (approved 2026-10-24) |
+| D2 | When | ✅ After the hub is live on Railway |
+| D3 | Preview deployments | ✅ No `INTAKE_SECRET` on Preview, so pull-request previews can't send to the real hub (their forms show "could not be sent"); full tests use the Production settings on the `*.pages.dev` address before the domain switch |
+| D4 | Rate limits | ✅ Turnstile + 1 Cloudflare rule (10 per 10 s on `/api/`) + the binding (5 form sends per 60 s) if Pages supports it + the hub's limit |
+| D5 | Privacy page | ✅ Add one line about Cloudflare Turnstile |
+| D6 | The inline "js" script | ✅ Allow it by its hash in the CSP (keeps the no-flash load), rather than moving it to a file |
+| D7 | Inline styles | ✅ `'unsafe-inline'` for styles only, rather than rewriting the hero's `style="…"` attributes |
+| D8 | HSTS | ✅ 5 minutes while testing, then 1 year with `includeSubDomains`; no preload |
+| D9 | Keeping Replit | ✅ **No Replit fallback.** Unpublish the Replit site as soon as the Cloudflare site is live and tested (Kevin, 2026-10-24) |
+| D10 | The domain | ❓ **Pending:** Kevin's answer to section 7 |
