@@ -2,7 +2,7 @@
 
 | | |
 | --- | --- |
-| **Status** | `APPROVED` by Kevin, 2026-10-24, for **D1–D9** (D9 changed: no Replit fallback). **D10 (the domain) is still pending.** Nothing is built yet. The hub moves to Railway first; this move starts after that. |
+| **Status** | `APPROVED` by Kevin, 2026-10-24, for **D1–D9** (D9 changed: no Replit fallback), and **D10** on 2026-10-25 (the domain isn't bought yet; buy it at Cloudflare). Nothing is built yet. The hub moves to Railway first; this move starts after that. |
 | **Requested by** | Kevin, 2026-10-24: "Public site → Cloudflare Pages, Private hub → Railway" (approved hosting decision), and fixes #2–#4 from the public site security check (2026-10-24) left for this move. |
 | **Builds on** | CR-009 (no database, the site only relays to the hub), CR-010 and CR-011 (visits and visitor events to the hub), the hub's intake contract v4, and hub CR-015 (the hub's new Railway address). |
 | **Changes** | `specs/constitution.md` §9 and §10 say the site "must run reliably on Replit" with Node.js and Express. After this CR the pages run on Cloudflare Pages and the form relay runs as **Pages Functions**. |
@@ -91,11 +91,13 @@ https://:project.pages.dev/*
 
 ## 7. Domain and DNS for mainstreetsitessd.com
 
-❓ **Kevin: where is `mainstreetsitessd.com` registered, and has it been bought yet?** (`specs/handoff.md` still says "confirm `mainstreetsitessd.com` and buy it if needed".) The steps depend on the answer:
+✅ **Kevin, 2026-10-25: not bought yet; buy it at Cloudflare (D10).** The site runs on the address Replit's Core plan gives it, which **stops working when the Replit site is unpublished**. So `mainstreetsitessd.com` must be bought **before** that (phase 1), or shared links break. A public registry check (2026-10-25) showed `mainstreetsitessd.com` **not registered yet** (`mainstreetsites.com` is taken).
+
+The steps for each case (we're in the first row):
 
 | If it's… | Steps |
 | --- | --- |
-| **Not bought yet** | Buy it in **Cloudflare → Domain Registration** (sold at cost, no markup). DNS is then on Cloudflare already. |
+| **Not bought yet** ✅ (this one) | Buy it in **Cloudflare → Domain Registration** (sold at cost, no markup; about $10–12 a year). DNS is then on Cloudflare already. |
 | **Registered at Cloudflare** | Nothing to move. Add it in the Pages project → Custom domains. |
 | **Registered elsewhere** (Namecheap, GoDaddy, Squarespace, Google/Squarespace Domains…) | 1. Add the site in Cloudflare (free plan). 2. Check that Cloudflare copied every existing DNS record, especially any email (MX/TXT) records. 3. At the registrar, change the nameservers to the two Cloudflare gives. 4. Wait for "Active" (minutes to a day). The domain can stay registered there. Moving the registration to Cloudflare is optional, later. |
 
@@ -133,7 +135,7 @@ Then, for every case:
 
 Cost: **$0** (Pages, Functions, Turnstile, and one rate limiting rule are on Cloudflare's free plan). Only the domain costs money, if it isn't bought yet.
 
-## 10. Decisions (D1–D9 approved by Kevin 2026-10-24; D10 pending)
+## 10. Decisions (D1–D9 approved by Kevin 2026-10-24; D10 on 2026-10-25)
 
 | # | Question | Recommended |
 | --- | --- | --- |
@@ -146,4 +148,4 @@ Cost: **$0** (Pages, Functions, Turnstile, and one rate limiting rule are on Clo
 | D7 | Inline styles | ✅ `'unsafe-inline'` for styles only, rather than rewriting the hero's `style="…"` attributes |
 | D8 | HSTS | ✅ 5 minutes while testing, then 1 year with `includeSubDomains`; no preload |
 | D9 | Keeping Replit | ✅ **No Replit fallback.** Unpublish the Replit site as soon as the Cloudflare site is live and tested (Kevin, 2026-10-24) |
-| D10 | The domain | ❓ **Pending:** Kevin's answer to section 7 |
+| D10 | The domain | ✅ **Not bought yet: buy `mainstreetsitessd.com` in Cloudflare → Domain Registration** in phase 1, before the Replit site is unpublished (Kevin, 2026-10-25) |
