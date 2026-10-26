@@ -14,6 +14,8 @@
   <script>document.documentElement.classList.add("js");</script>
   <link rel="stylesheet" href="/style.css">
   <script src="/script.js" defer></script>
+  <!-- CR-013: Cloudflare Turnstile, the contact form's bot check. -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -132,6 +134,10 @@
               </label>
               <p class="field-error" id="consent-error" hidden></p>
             </div>
+
+            <!-- CR-013: the bot check. The site key is public (it only works on our hostnames). This is Cloudflare's
+                 always-pass TEST key until the real one is made in Cloudflare → Turnstile. -->
+            <div class="field cf-turnstile" id="turnstile" data-sitekey="1x00000000000000000000AA" data-theme="light"></div>
 
             <button class="button button-primary" type="submit">Send Message</button>
             <p class="form-status" id="form-status" role="status" tabindex="-1"></p>

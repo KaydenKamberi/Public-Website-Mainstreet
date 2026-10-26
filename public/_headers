@@ -1,0 +1,16 @@
+# CR-013 section 5: security headers for every page Cloudflare Pages serves (fixes security check #4).
+# Cloudflare doesn't apply this file to the Functions' answers (/api/*); functions/_lib/respond.js sets those.
+# The two sha256 values allow the one-line "js" script in each page's <head> (index.html has a longer one).
+# If either script ever changes, its value must change too, or that script stops running.
+# HSTS starts at 5 minutes while testing; raise it to max-age=31536000; includeSubDomains a week after the domain is live.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-WZRJfWvsnNCPcxzZwvyhovnZGqhZaC+8gPGPRbx6wTk=' 'sha256-ik3gk4FeLAMdxt+7dkwzY3vxa91DDlJpV9QS6P77AJ4=' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-src https://challenges.cloudflare.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=300
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+# The free test address isn't shown in Google; only the real domain is.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
