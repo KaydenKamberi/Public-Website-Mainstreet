@@ -49,6 +49,8 @@ export function validateLead(body) {
   const errors = {};
   const lead = {
     name: text(body.name, 100),
+    // Hub CR-017: optional; empty means none.
+    businessName: text(body.businessName, 120) || null,
     businessType: text(body.businessType, 100),
     contactMethod: text(body.contactMethod, 10),
     email: null,
@@ -88,7 +90,7 @@ export function validateLead(body) {
   }
   if (!lead.consent) errors.consent = "Consent is required.";
 
-  const textBytes = new TextEncoder().encode(JSON.stringify([lead.name, lead.location, lead.links, lead.message])).length;
+  const textBytes = new TextEncoder().encode(JSON.stringify([lead.name, lead.businessName, lead.location, lead.links, lead.message])).length;
   if (textBytes > HUB_TEXT_BYTES_MAX) errors.message = "The form is too long.";
 
   return { lead, errors };

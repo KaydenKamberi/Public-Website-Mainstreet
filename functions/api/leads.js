@@ -58,6 +58,7 @@ export async function onRequestPost({ request, env }) {
   const status = await postToHub(env, url, {
     submission_id: id,
     name: lead.name,
+    ...(lead.businessName ? { business_name: lead.businessName } : {}),
     business_type: HUB_BUSINESS_TYPES[lead.businessType],
     contact_method: lead.contactMethod,
     email: lead.email,

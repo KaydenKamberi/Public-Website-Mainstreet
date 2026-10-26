@@ -55,9 +55,15 @@
         <div>
           <form class="contact-form" id="contact-form" action="/api/leads" method="post" novalidate>
             <div class="field">
-              <label for="name">Name</label>
+              <label for="name">Your name</label>
               <input id="name" name="name" type="text" autocomplete="name" maxlength="100" required aria-describedby="name-error">
               <p class="field-error" id="name-error" hidden></p>
+            </div>
+
+            <div class="field">
+              <label for="business-name">Business name <span class="optional">(optional)</span></label>
+              <p class="field-hint" id="business-name-hint">If it's new and doesn't have a name yet, leave this empty.</p>
+              <input id="business-name" name="businessName" type="text" autocomplete="organization" maxlength="120" aria-describedby="business-name-hint">
             </div>
 
             <div class="field">

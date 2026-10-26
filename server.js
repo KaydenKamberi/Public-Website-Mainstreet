@@ -52,6 +52,8 @@ function validateLead(body) {
   const errors = {};
   const lead = {
     name: text(body.name, 100),
+    // Hub CR-017: optional; empty means none.
+    businessName: text(body.businessName, 120) || null,
     businessType: text(body.businessType, 100),
     contactMethod: text(body.contactMethod, 10),
     email: null,
@@ -91,7 +93,7 @@ function validateLead(body) {
   }
   if (!lead.consent) errors.consent = "Consent is required.";
 
-  const textBytes = Buffer.byteLength(JSON.stringify([lead.name, lead.location, lead.links, lead.message]));
+  const textBytes = Buffer.byteLength(JSON.stringify([lead.name, lead.businessName, lead.location, lead.links, lead.message]));
   if (textBytes > HUB_TEXT_BYTES_MAX) errors.message = "The form is too long.";
 
   return { lead, errors };
@@ -172,6 +174,7 @@ async function sendToHub(lead, id) {
   const status = await postToHub(HUB_INTAKE_URL, {
     submission_id: id,
     name: lead.name,
+    ...(lead.businessName ? { business_name: lead.businessName } : {}),
     business_type: HUB_BUSINESS_TYPES[lead.businessType],
     contact_method: lead.contactMethod,
     email: lead.email,

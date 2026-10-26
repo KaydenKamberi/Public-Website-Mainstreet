@@ -375,6 +375,7 @@ if (contactForm) {
     const method = chosenMethod();
     const payload = {
       name: fields.name.value.trim(),
+      businessName: fields.businessName.value.trim(),
       businessType: fields.businessType.value,
       contactMethod: method,
       email: method === "email" ? fields.email.value.trim() : "",
