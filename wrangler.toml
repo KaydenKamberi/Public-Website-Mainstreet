@@ -1,0 +1,15 @@
+# CR-013: Cloudflare Pages. The pages are the files in public/; the form relay is in functions/.
+# No secrets here: INTAKE_SECRET and TURNSTILE_SECRET_KEY are encrypted Cloudflare secrets, and HUB_URL is a
+# setting in the Pages project (Settings → Variables and Secrets). For local tests they go in .dev.vars (git-ignored).
+name = "mainstreet-public-site"
+pages_build_output_dir = "public"
+compatibility_date = "2026-10-01"
+
+# CR-013 D4: 5 form sends per 60 seconds per visitor address (functions/api/leads.js, FORM_LIMITER).
+[[ratelimits]]
+name = "FORM_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 5
+  period = 60

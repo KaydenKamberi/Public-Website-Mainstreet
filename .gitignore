@@ -13,3 +13,7 @@ exports/
 
 # System files
 .DS_Store
+
+# Cloudflare: local test settings and the local tool's cache (CR-013)
+.dev.vars
+.wrangler/

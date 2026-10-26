@@ -386,6 +386,8 @@ if (contactForm) {
       website: fields.website.value,
       source: visitorSource,
       submissionId,
+      // CR-013: the Turnstile bot check's one-time token (the widget adds this hidden field to the form).
+      turnstile: contactForm.querySelector('[name="cf-turnstile-response"]')?.value || "",
     };
 
     // The site waits for the team hub's answer (CR-009), so show that it's working.
@@ -414,6 +416,8 @@ if (contactForm) {
     } finally {
       submitButton.disabled = false;
       submitButton.textContent = "Send Message";
+      // A token works once, so the next try needs a fresh check (CR-013).
+      try { window.turnstile?.reset("#turnstile"); } catch (err) {}
       status.focus();
     }
   });
