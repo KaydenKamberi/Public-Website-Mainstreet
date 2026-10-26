@@ -2,7 +2,7 @@
 
 | | |
 | --- | --- |
-| **Status** | `APPROVED` by Kevin, 2026-10-24, for **D1–D9** (D9 changed: no Replit fallback), and **D10** on 2026-10-25 (the domain isn't bought yet; buy it at Cloudflare). Nothing is built yet. The hub moves to Railway first; this move starts after that. |
+| **Status** | `APPROVED` by Kevin, 2026-10-24, for **D1–D9** (D9 changed: no Replit fallback), and **D10** on 2026-10-25 (the domain isn't bought yet; buy it at Cloudflare). **Phase 2 (the code) is built** (2026-10-25, branch `cr-013-cloudflare-pages`); phases 1, 3–5 wait for the repo's Cloudflare connection and the domain. The hub moves to Railway first; this move starts after that. |
 | **Requested by** | Kevin, 2026-10-24: "Public site → Cloudflare Pages, Private hub → Railway" (approved hosting decision), and fixes #2–#4 from the public site security check (2026-10-24) left for this move. |
 | **Builds on** | CR-009 (no database, the site only relays to the hub), CR-010 and CR-011 (visits and visitor events to the hub), the hub's intake contract v4, and hub CR-015 (the hub's new Railway address). |
 | **Changes** | `specs/constitution.md` §9 and §10 say the site "must run reliably on Replit" with Node.js and Express. After this CR the pages run on Cloudflare Pages and the form relay runs as **Pages Functions**. |
@@ -114,10 +114,19 @@ Then, for every case:
 | --- | --- | --- |
 | **0** | — | Wait for the hub to be live on Railway (hub CR-015) |
 | **1** | Kevin (step by step) | Cloudflare account access, a Pages project from this GitHub repo, a Turnstile widget, the secrets and settings (section 2). Answer section 7 |
-| **2** | Claude Code, one branch | `functions/api/*`, `functions/_lib/hub.js`, `public/_headers`, Turnstile on the form, `script.js` changes, the privacy line, `wrangler.toml` (no secrets), local tests with `wrangler pages dev`, a fake hub, and Turnstile test keys |
+| **2** | Claude Code, one branch | `functions/api/*`, `functions/_lib/hub.js`, `public/_headers`, Turnstile on the form, `script.js` changes, the privacy line, `wrangler.toml` (no secrets), local tests with `wrangler pages dev`, a fake hub, and Turnstile test keys ✅ **Built 2026-10-25** |
 | **3** | Kevin + Claude Code | The test checklist on `*.pages.dev` (section 6) |
 | **4** | Kevin (step by step) | Domain and DNS (section 7), the rate limiting rule, HSTS raised to 1 year after a week |
 | **5** | Kevin + Claude Code | Right after the checks pass on the real domain: Kevin unpublishes Replit; Claude Code removes `server.js`, `.replit`, and Express; update README, `handoff.md`, `replit.md`, `CLAUDE.md`, and `constitution.md` §9–§10 |
+
+## Phase 2 notes (built 2026-10-25)
+
+- **The Turnstile site key in `contact.html` is Cloudflare's always-pass TEST key** (`1x00000000000000000000AA`) until the real widget is made in phase 1. Swapping it is a one-line change (the site key is public).
+- **The Rate Limiting binding works with Pages locally** (`wrangler pages dev`: 5 sends, then 429, per address). Whether live Pages honors it is checked on `*.pages.dev` in phase 3. Without it, `leads.js` skips that check; Turnstile, the Cloudflare rule, and the hub's limit still apply.
+- **Without JavaScript the form can't pass the bot check** (Turnstile needs it), so a plain form post gets the "could not be sent… text us" message. Today's form already needs JavaScript for its checks.
+- Cloudflare Pages serves `/contact` for `contact.html` and redirects `/contact.html` there (308). The site's own links still say `.html`; they keep working.
+- `wrangler` is a **development tool only** (`npm run pages:dev`). `npm audit` flags 3 issues inside wrangler's own packages; the live site's packages have 0.
+- **D5 wording for Kevin's OK** (privacy page, new "Spam protection" section): "Our contact form uses Cloudflare Turnstile to check that a real person is sending it. For this check, Cloudflare sees basic details about your browser and connection, and uses them only to stop spam. It does not see what you type in the form." The policy's effective date changes when the Cloudflare site goes live.
 
 ## 9. Every place that changes
 
