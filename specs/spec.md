@@ -394,7 +394,8 @@ Want a website for your business? Tell us what kind of business you have, and we
 
 Fields, in this order:
 
-- Name (required)
+- "Your name" (required). Was "Name" until hub CR-017 (Kevin, 2026-10-25).
+- "Business name" (optional, up to 120 characters; sent to the hub as `business_name`, intake contract v5). Hint: "If it's new and doesn't have a name yet, leave this empty." (hub CR-017, Kevin 2026-10-25: so the hub's Find on Google searches for the business, not the person)
 - Business type (required): a dropdown with these options, in this order: Restaurant, HVAC, Barbershop, Car detailing, Gym / martial arts studio, Lash studio, House cleaning service, Bakery, Tattoo shop, Other (special request)
 - "Send my info document by" (required): choose **one**: Email or Text
 - Email (shown and required only when Email is chosen)

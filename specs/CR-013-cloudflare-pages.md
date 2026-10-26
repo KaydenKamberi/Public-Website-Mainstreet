@@ -121,6 +121,8 @@ Then, for every case:
 
 ## Phase 2 notes (built 2026-10-25)
 
+- **Form change folded in (Kevin, 2026-10-25, hub CR-017):** an optional "Business name" field after "Your name" (renamed from "Name"), sent as `business_name` (intake contract v5). Also added to `server.js`, so the Replit version stays the same until it's retired. The hub accepts it once hub PR #61 is merged.
+
 - **The Turnstile site key in `contact.html` is Cloudflare's always-pass TEST key** (`1x00000000000000000000AA`) until the real widget is made in phase 1. Swapping it is a one-line change (the site key is public).
 - **The Rate Limiting binding works with Pages locally** (`wrangler pages dev`: 5 sends, then 429, per address). Whether live Pages honors it is checked on `*.pages.dev` in phase 3. Without it, `leads.js` skips that check; Turnstile, the Cloudflare rule, and the hub's limit still apply.
 - **Without JavaScript the form can't pass the bot check** (Turnstile needs it), so a plain form post gets the "could not be sent… text us" message. Today's form already needs JavaScript for its checks.
