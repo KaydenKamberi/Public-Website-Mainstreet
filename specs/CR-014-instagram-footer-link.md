@@ -2,7 +2,7 @@
 
 | | |
 | --- | --- |
-| **Status** | `DRAFT`, waiting for Kevin's approval. |
+| **Status** | `APPROVED` by Kevin, 2026-11-13, with D1-D4 as recommended: "approved, go ahead and merge it". Kevin confirmed @thewebsitefix is the business account (a web design account). |
 | **Requested by** | Kevin, 2026-11-13: "can you add this link of my instagram into the website next to the email at the footer. https://www.instagram.com/thewebsitefix/" |
 | **Number** | CR-013 is held for the Cloudflare Pages move (see `CLAUDE.md`), so this one is CR-014. |
 | **Does not change** | The header, the page content, the form, the hub contract, or the analytics rules. |
