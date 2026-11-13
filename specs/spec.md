@@ -139,7 +139,7 @@ The logo in the header links to Home. Under 1024 px, navigation collapses into a
 - Links: Home, Offerings, About, Contact, Privacy Policy
 - Copyright line with the current year and business name
 - Payment methods: "We accept" with Venmo and Cash badges (CR-003)
-- Social media links: Instagram (and possibly Facebook), added once the accounts exist. `[NEEDS CONTENT: Instagram and Facebook handles]` A "Follow us" row is built and hidden in every footer; turn it on by adding the links (CR-003 D3).
+- Instagram: "Instagram @thewebsitefix", linked to `https://www.instagram.com/thewebsitefix/`, right after the email (CR-014). The hidden "Follow us" icon row (CR-003 D3) stays hidden. Facebook: `[NEEDS CONTENT: Facebook handle]`, none yet.
 - No admin link in the public footer
 
 ## Primary CTA
@@ -168,11 +168,11 @@ Rules:
 ## Social Media
 
 - Platform 1: Instagram (decided 2026-09-29)
-- Account or handle: `[NEEDS CONTENT: Instagram handle]` Account not created yet.
+- Account or handle: @thewebsitefix (`https://www.instagram.com/thewebsitefix/`), linked in every footer (CR-014)
 - Platform 2: Facebook (maybe)
 - Account or handle: None yet
 
-No social media icons or links appear on the site until accounts exist.
+No social media icons or links appear on the site until accounts exist. Instagram is live in the footer since CR-014.
 
 ## Other Sitewide Requirements
 
